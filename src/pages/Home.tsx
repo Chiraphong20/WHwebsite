@@ -279,6 +279,49 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Facebook Reels Section */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <span>Facebook Reels</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-dark mb-4">ดูบรรยากาศร้านค้าจริง</h2>
+            <p className="text-lg text-gray-500 max-w-xl mx-auto">ชมคลิปบรรยากาศและสินค้าของเราจาก Facebook Reels ได้เลยครับ</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
+            {[
+              "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1488611779327844%2F&show_text=false&width=267&t=0",
+              "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1094261466200926%2F&show_text=false&width=267&t=0",
+              "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F2116653489111310%2F&show_text=false&width=267&t=0",
+              "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F755963940920240%2F&show_text=false&width=268&t=0",
+            ].map((src, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="w-full max-w-[267px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300"
+              >
+                <iframe
+                  src={src}
+                  width="267"
+                  height="476"
+                  style={{ border: 'none', overflow: 'hidden', display: 'block', width: '100%' }}
+                  scrolling="no"
+                  frameBorder={0}
+                  allowFullScreen
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  title={`Facebook Reel ${idx + 1}`}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 z-0"></div>
