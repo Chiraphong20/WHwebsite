@@ -36,31 +36,42 @@ export default function Contact() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-20">
-          {/* Contact Info Cards */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4">
-            <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+          {/* Phone */}
+          <a href="tel:0935022828" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-red-100 transition-all group">
+            <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 mx-auto group-hover:bg-red-600 group-hover:text-white transition-colors">
               <Phone size={24} />
             </div>
             <h3 className="font-bold text-gray-900">โทรศัพท์</h3>
-            <p className="text-gray-600 text-sm">08x-xxx-xxxx<br />044-xxx-xxx</p>
-          </div>
+            <p className="text-gray-600 text-sm font-medium">093 502 2828</p>
+          </a>
 
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4">
-            <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 mx-auto">
+          {/* Email */}
+          <a href="mailto:fukurouretail@gmail.com" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-blue-100 transition-all group">
+            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <Mail size={24} />
+            </div>
+            <h3 className="font-bold text-gray-900">Email</h3>
+            <p className="text-gray-600 text-sm font-medium break-all">fukurouretail@gmail.com</p>
+          </a>
+
+          {/* TikTok */}
+          <a href="https://www.tiktok.com/@wonghiran20korat" target="_blank" rel="noopener noreferrer" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-gray-300 transition-all group">
+            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-800 mx-auto group-hover:bg-gray-900 group-hover:text-white transition-colors">
+              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.31 6.31 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.84 1.56V6.82a4.85 4.85 0 01-1.07-.13z"/></svg>
+            </div>
+            <h3 className="font-bold text-gray-900">TikTok</h3>
+            <p className="text-gray-600 text-sm font-medium">@wonghiran20korat</p>
+          </a>
+
+          {/* Messenger / Facebook */}
+          <a href="https://m.me/วงษ์หิรัญค้าส่ร20โคราช" target="_blank" rel="noopener noreferrer" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-blue-100 transition-all group">
+            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mx-auto group-hover:bg-blue-500 group-hover:text-white transition-colors">
               <MessageCircle size={24} />
             </div>
-            <h3 className="font-bold text-gray-900">Line OA</h3>
-            <p className="text-gray-600 text-sm">@wonghiran_wholesale<br />(คลิกเพื่อแอดไลน์)</p>
-          </div>
-
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4">
-            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto">
-              <Facebook size={24} />
-            </div>
-            <h3 className="font-bold text-gray-900">Facebook</h3>
-            <p className="text-gray-600 text-sm">วงษ์หิรัญค้าส่ง 20 บาท<br />นครราชสีมา</p>
-          </div>
+            <h3 className="font-bold text-gray-900">Messenger</h3>
+            <p className="text-gray-600 text-sm font-medium">วงษ์หิรัญค้าส่ร20โคราช</p>
+          </a>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -122,14 +133,14 @@ export default function Contact() {
               <div className="space-y-4">
                 <div className="flex items-start space-x-3 text-gray-600">
                   <MapPin size={20} className="text-red-600 shrink-0 mt-1" />
-                  <span>123 หมู่ 4 ต.ในเมือง อ.เมือง จ.นครราชสีมา 30000</span>
+                  <span>476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา 30000</span>
                 </div>
                 <div className="flex items-start space-x-3 text-gray-600">
                   <Clock size={20} className="text-red-600 shrink-0 mt-1" />
                   <div>
                     <p className="font-bold text-gray-900">เวลาทำการ:</p>
-                    <p>จันทร์ - เสาร์: 08:00 - 18:00 น.</p>
-                    <p>อาทิตย์: 09:00 - 16:00 น.</p>
+                    <p>เปิดทุกวัน 08:00 – 17:30 น.</p>
+                    <p className="text-sm text-gray-500 mt-1">หยุดเฉพาะวันสงกรานต์และวันปีใหม่</p>
                   </div>
                 </div>
               </div>
