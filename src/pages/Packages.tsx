@@ -16,7 +16,7 @@ export default function Packages() {
           <div className="flex items-center justify-center text-sm text-gray-500 space-x-2 mb-4">
             <span>หน้าแรก</span>
             <ChevronRight size={14} />
-            <span className="text-red-600 font-medium">แพ็กเกจแฟรนไชส์</span>
+            <span className="text-primary-600 font-medium">แพ็กเกจแฟรนไชส์</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">แฟรนไชส์แบบพาร์ทเนอร์ (ไม่มีสัญญา)</h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -39,9 +39,9 @@ export default function Packages() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-white p-6 rounded-3xl border border-red-50 text-center hover:shadow-lg hover:border-red-100 transition-all"
+              className="bg-white p-6 rounded-3xl border border-primary-50 text-center hover:shadow-lg hover:border-primary-100 transition-all"
             >
-              <div className="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-14 h-14 bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 {feature.icon}
               </div>
               <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
@@ -64,10 +64,10 @@ export default function Packages() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.2 }}
-              className={`bg-white rounded-3xl overflow-hidden shadow-sm border flex flex-col relative ${idx === 1 ? 'border-red-500 shadow-xl shadow-red-500/10 scale-105 z-10' : 'border-gray-100'}`}
+              className={`bg-white rounded-3xl overflow-hidden shadow-sm border flex flex-col relative ${idx === 1 ? 'border-primary-500 shadow-xl shadow-red-500/10 scale-105 z-10' : 'border-gray-100'}`}
             >
               {idx === 1 && (
-                <div className="absolute top-0 inset-x-0 bg-red-600 text-white text-sm font-bold text-center py-1.5 uppercase tracking-widest">
+                <div className="absolute top-0 inset-x-0 bg-primary-600 text-white text-sm font-bold text-center py-1.5 uppercase tracking-widest">
                   แพ็กเกจยอดนิยม
                 </div>
               )}
@@ -82,7 +82,7 @@ export default function Packages() {
               <div className="p-8 flex-1 flex flex-col">
                 <div className="mb-6 border-b border-gray-100 pb-6 text-center">
                   <h2 className="text-2xl font-black text-gray-900 mb-3">{pkg.name}</h2>
-                  <div className="text-3xl font-extrabold text-red-600 mb-3">{pkg.price}</div>
+                  <div className="text-3xl font-extrabold text-primary-600 mb-3">{pkg.price}</div>
                   <p className="text-gray-500 text-sm font-medium">{pkg.description}</p>
                 </div>
 
@@ -103,7 +103,7 @@ export default function Packages() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`w-full py-4 rounded-2xl font-bold text-center transition-all flex items-center justify-center space-x-2 ${
-                    idx === 1 ? 'bg-red-600 text-white hover:bg-red-700 shadow-md' : 'bg-red-50 text-red-600 hover:bg-red-100'
+                    idx === 1 ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-md' : 'bg-primary-50 text-primary-600 hover:bg-red-100'
                   }`}
                 >
                   <MessageCircle size={20} />
@@ -289,3 +289,4 @@ export default function Packages() {
     </div>
   );
 }
+

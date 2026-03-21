@@ -1,13 +1,14 @@
 import React from 'react';
 import { Product } from '../data/mockData';
-import { ShoppingCart } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart?: (p: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
+const LINE_OA_URL = 'https://line.me/R/ti/p/@wonghiran20korat';
+
+const ProductCard: React.FC<ProductCardProps> = ({ product }) => (
   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
     <div className="relative aspect-square overflow-hidden bg-gray-50">
       <img 
@@ -20,13 +21,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
           ขายดี 🔥
         </span>
       )}
-      
-      {/* Quick View Overlay */}
-      <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
-        <div className="bg-white text-primary-600 px-6 py-2.5 rounded-full font-bold flex items-center space-x-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-          <span>รายละเอียด</span>
-        </div>
-      </div>
     </div>
     
     <div className="p-6 flex-1 flex flex-col">
@@ -50,16 +44,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
           </div>
         </div>
         
-        <button 
-          onClick={(e) => { 
-            e.preventDefault(); 
-            if(onAddToCart) onAddToCart(product); 
-          }}
-          className="w-full py-3.5 bg-primary-500 text-white text-sm rounded-2xl hover:bg-primary-600 active:scale-95 transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/40"
+        <a 
+          href={`${LINE_OA_URL}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-3.5 bg-[#06C755] text-white text-sm rounded-2xl hover:bg-[#05a847] active:scale-95 transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-500/20"
         >
-          <ShoppingCart size={18} />
-          เพิ่มลงตะกร้า (ราคาส่ง)
-        </button>
+          <MessageCircle size={18} />
+          สอบถามราคาส่งผ่าน LINE
+        </a>
       </div>
     </div>
   </div>

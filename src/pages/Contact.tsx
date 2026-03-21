@@ -27,7 +27,7 @@ export default function Contact() {
           <div className="flex items-center justify-center text-sm text-gray-500 space-x-2 mb-4">
             <span>หน้าแรก</span>
             <ChevronRight size={14} />
-            <span className="text-red-600 font-medium">ติดต่อเรา</span>
+            <span className="text-primary-600 font-medium">ติดต่อเรา</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">ติดต่อสอบถามข้อมูล</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -38,8 +38,8 @@ export default function Contact() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
           {/* Phone */}
-          <a href="tel:0935022828" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-red-100 transition-all group">
-            <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 mx-auto group-hover:bg-red-600 group-hover:text-white transition-colors">
+          <a href="tel:0935022828" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-primary-100 transition-all group">
+            <div className="w-12 h-12 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-600 mx-auto group-hover:bg-primary-600 group-hover:text-white transition-colors">
               <Phone size={24} />
             </div>
             <h3 className="font-bold text-gray-900">โทรศัพท์</h3>
@@ -85,7 +85,7 @@ export default function Contact() {
                   <input
                     required
                     type="text"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                     placeholder="ระบุชื่อของคุณ"
                   />
                 </div>
@@ -94,14 +94,14 @@ export default function Contact() {
                   <input
                     required
                     type="tel"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                     placeholder="08x-xxx-xxxx"
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">หัวข้อที่ต้องการสอบถาม</label>
-                <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all">
+                <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all">
                   <option>สอบถามราคาส่งสินค้า</option>
                   <option>สนใจแพ็กเกจเปิดร้านใหม่</option>
                   <option>สอบถามเรื่องการจัดส่ง</option>
@@ -112,13 +112,13 @@ export default function Contact() {
                 <label className="text-sm font-medium text-gray-700">ข้อความ</label>
                 <textarea
                   rows={4}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="รายละเอียดที่ต้องการสอบถาม..."
                 ></textarea>
               </div>
               <button
                 type="submit"
-                className="w-full bg-red-600 text-white py-4 rounded-xl font-bold hover:bg-red-700 transition-all flex items-center justify-center space-x-2"
+                className="w-full bg-primary-600 text-white py-4 rounded-xl font-bold hover:bg-primary-700 transition-all flex items-center justify-center space-x-2"
               >
                 <Send size={20} />
                 <span>ส่งข้อความ</span>
@@ -132,11 +132,11 @@ export default function Contact() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">ที่อยู่โกดัง</h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3 text-gray-600">
-                  <MapPin size={20} className="text-red-600 shrink-0 mt-1" />
+                  <MapPin size={20} className="text-primary-600 shrink-0 mt-1" />
                   <span>476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา 30000</span>
                 </div>
                 <div className="flex items-start space-x-3 text-gray-600">
-                  <Clock size={20} className="text-red-600 shrink-0 mt-1" />
+                  <Clock size={20} className="text-primary-600 shrink-0 mt-1" />
                   <div>
                     <p className="font-bold text-gray-900">เวลาทำการ:</p>
                     <p>เปิดทุกวัน 08:00 – 17:30 น.</p>
@@ -177,3 +177,4 @@ export default function Contact() {
     </div>
   );
 }
+
