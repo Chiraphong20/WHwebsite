@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import liff from '@line/liff';
 
 interface LineUser {
   userId: string;
@@ -17,57 +18,66 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const LIFF_ID = import.meta.env.VITE_LIFF_ID as string;
-const REDIRECT_URI = import.meta.env.VITE_LINE_REDIRECT_URI || (window.location.origin + '/products');
-const LINE_LOGIN_URL = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${import.meta.env.VITE_LINE_LOGIN_CHANNEL_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=wonghiran&scope=profile%20openid`;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<LineUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Try to restore user from localStorage
-    try {
-      const stored = localStorage.getItem('line_user');
-      if (stored) {
-        setUser(JSON.parse(stored));
-      }
-    } catch {}
-    setIsLoading(false);
-
-    // Try to init LIFF if available
-    const tryLiff = async () => {
+    const initLiff = async () => {
       try {
-        const liff = (window as any).liff;
-        if (!liff || !LIFF_ID) return;
+        if (!LIFF_ID) {
+          // No LIFF ID — try restoring from localStorage only
+          const stored = localStorage.getItem('line_user');
+          if (stored) setUser(JSON.parse(stored));
+          setIsLoading(false);
+          return;
+        }
+
         await liff.init({ liffId: LIFF_ID });
+
         if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
           const u: LineUser = {
             userId: profile.userId,
             displayName: profile.displayName,
-            pictureUrl: profile.pictureUrl,
+            pictureUrl: profile.pictureUrl ?? undefined,
           };
           setUser(u);
           localStorage.setItem('line_user', JSON.stringify(u));
+        } else {
+          // Not logged in via LIFF — try localStorage fallback
+          const stored = localStorage.getItem('line_user');
+          if (stored) setUser(JSON.parse(stored));
         }
       } catch (e) {
-        // LIFF not available or not in LINE app — fallback to LINE Login OAuth
+        console.error('LIFF init error:', e);
+        // Fallback: restore from localStorage
+        try {
+          const stored = localStorage.getItem('line_user');
+          if (stored) setUser(JSON.parse(stored));
+        } catch {}
+      } finally {
+        setIsLoading(false);
       }
     };
-    tryLiff();
+
+    initLiff();
   }, []);
 
   const login = () => {
-    // Redirect to LINE Login
-    window.location.href = LINE_LOGIN_URL;
+    try {
+      liff.login();
+    } catch (e) {
+      console.error('Login error:', e);
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('line_user');
     setUser(null);
     try {
-      const liff = (window as any).liff;
-      if (liff?.isLoggedIn?.()) liff.logout();
+      if (liff.isLoggedIn()) liff.logout();
     } catch {}
   };
 
