@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import logo from '../assets/logo.png';
 
 const navItems = [
   { name: 'หน้าแรก', path: '/' },
@@ -35,7 +34,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="w-12 h-12 rounded-full overflow-hidden bg-white shadow-sm border border-orange-100 group-hover:shadow-md transition-shadow">
-              <img src={logo} alt="Fukuro Cat Logo" className="w-full h-full object-cover" />
+              <img src="/images/้home/1024303_0-removebg-preview.png" alt="Fukuro Cat Logo" className="w-full h-full object-contain p-1" />
             </div>
             <span className={`font-bold text-2xl tracking-tight transition-colors ${scrolled ? 'text-dark' : 'text-gray-900'}`}>
               วงษ์หิรัญ<span className="text-primary-500">ค้าส่ง</span>

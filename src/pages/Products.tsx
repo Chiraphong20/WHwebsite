@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, ChevronRight, Loader2, PackageSearch } from 'lucide-react';
+import { Search, Filter, ChevronRight, Loader2, PackageSearch, MessageCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { CATEGORIES, Product } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
@@ -175,6 +175,7 @@ export default function Products() {
           </main>
         </div>
       </div>
+
     </div>
   );
 }

@@ -1,12 +1,10 @@
 import React from 'react';
 import { Product } from '../data/mockData';
-import { MessageCircle } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
 }
 
-const LINE_OA_URL = 'https://line.me/R/ti/p/@wonghiran20korat';
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => (
   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
@@ -43,16 +41,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => (
             ซื้อขั้นต่ำ {product.minWholesaleQty} {product.unit} ถึ้งได้ราคานี้
           </div>
         </div>
-        
-        <a 
-          href={`${LINE_OA_URL}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full py-3.5 bg-[#06C755] text-white text-sm rounded-2xl hover:bg-[#05a847] active:scale-95 transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-500/20"
-        >
-          <MessageCircle size={18} />
-          สอบถามราคาส่งผ่าน LINE
-        </a>
       </div>
     </div>
   </div>

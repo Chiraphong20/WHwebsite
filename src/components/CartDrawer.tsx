@@ -30,7 +30,7 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
     // Compose LINE message with order summary
     const text = items.map(i => `• ${i.product.name} x${i.qty} = ฿${(Number(i.product.wholesalePrice) * i.qty).toLocaleString()}`).join('\n');
     const msg = encodeURIComponent(`สนใจสั่งซื้อสินค้า:\n${text}\n\nรวม: ฿${total.toLocaleString()}`);
-    window.open(`https://line.me/R/oaMessage/@wonghiran20korat/?${msg}`, '_blank');
+    window.open(`https://line.me/R/oaMessage/@177eggfh/?${msg}`, '_blank');
   };
 
   return (
@@ -136,11 +136,10 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
                 </div>
                 <button
                   onClick={handleOrder}
-                  className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all text-white shadow-lg ${
-                    isLoggedIn
+                  className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all text-white shadow-lg ${isLoggedIn
                       ? 'bg-primary-500 hover:bg-primary-600 shadow-primary-500/30'
                       : 'bg-green-500 hover:bg-green-600 shadow-green-500/30'
-                  }`}
+                    }`}
                 >
                   {isLoggedIn ? (
                     <>

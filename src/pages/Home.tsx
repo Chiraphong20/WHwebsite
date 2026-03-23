@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Package, ShieldCheck, Star, Loader2, ShoppingCart, TrendingUp } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
-import fukuroCat from '../assets/logo.png';
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const CLOUD_NAME = "dffqpiizc";
@@ -117,7 +117,7 @@ export default function Home() {
               transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
             >
               <img 
-                src={fukuroCat} 
+                src="/images/้home/1024303_0-removebg-preview.png" 
                 alt="Fukuro Cat Mascot" 
                 className="w-full h-full object-contain filter drop-shadow-2xl"
               />
