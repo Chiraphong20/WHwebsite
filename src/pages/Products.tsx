@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, ChevronRight, Loader2, PackageSearch, MessageCircle } from 'lucide-react';
+import { Search, Filter, ChevronRight, Loader2, PackageSearch, MessageCircle, ShoppingCart } from 'lucide-react';
 import { motion } from 'motion/react';
 import { CATEGORIES, Product } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
+import CartDrawer from '../components/CartDrawer';
+import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const CLOUD_NAME = "dffqpiizc";
@@ -12,6 +14,10 @@ const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/uplo
 export default function Products() {
   const [searchParams] = useSearchParams();
   const initialCat = searchParams.get('cat') || 'ทั้งหมด';
+  
+  const { isLoggedIn, login } = useAuth();
+  const [cartItems, setCartItems] = useState<{product: Product, qty: number}[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,6 +58,35 @@ export default function Products() {
     fetchProducts();
   }, []);
 
+  const handleAddToCart = (product: Product) => {
+    if (!isLoggedIn) {
+      login();
+      return;
+    }
+    setCartItems(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
+      if (existing) {
+        return prev.map(item => item.product.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+      }
+      return [...prev, { product, qty: product.minWholesaleQty || 1 }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const handleRemoveFromCart = (productId: string | number) => {
+    setCartItems(prev => prev.filter(item => item.product.id !== productId));
+  };
+
+  const handleQtyChange = (productId: string | number, delta: number) => {
+    setCartItems(prev => prev.map(item => {
+      if (item.product.id === productId) {
+        const newQty = Math.max(1, item.qty + delta);
+        return { ...item, qty: newQty };
+      }
+      return item;
+    }));
+  };
+
   const filteredProducts = products.filter(p => {
     const matchesCategory = selectedCategory === 'ทั้งหมด' || p.category === selectedCategory;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -71,8 +106,21 @@ export default function Products() {
               <span className="text-primary-600 font-bold">ชุดสินค้าทั้งหมด</span>
             </div>
           </div>
-          <div className="text-gray-500 font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
-            แสดงสินค้า <span className="text-primary-600 font-bold">{filteredProducts.length}</span> รายการ
+          <div className="flex items-center space-x-4">
+            <div className="hidden md:block text-gray-500 font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+              แสดงสินค้า <span className="text-primary-600 font-bold">{filteredProducts.length}</span> รายการ
+            </div>
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="relative bg-white text-dark p-3.5 rounded-full shadow-sm border border-gray-100 hover:text-primary-600 hover:border-primary-100 hover:-translate-y-1 transition-all"
+            >
+              <ShoppingCart size={22} className="text-primary-500" />
+              {cartItems.reduce((acc, item) => acc + item.qty, 0) > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
+                  {cartItems.reduce((acc, item) => acc + item.qty, 0)}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -155,7 +203,10 @@ export default function Products() {
                     transition={{ duration: 0.3 }}
                     key={product.id}
                   >
-                    <ProductCard product={product} />
+                    <ProductCard 
+                      product={product} 
+                      onAddToCart={handleAddToCart}
+                    />
                   </motion.div>
                 ))}
               </div>
@@ -176,6 +227,14 @@ export default function Products() {
         </div>
       </div>
 
+      <CartDrawer 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cartItems}
+        onRemove={handleRemoveFromCart}
+        onQtyChange={handleQtyChange}
+        onClear={() => setCartItems([])}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import FloatingActionButton from './components/FloatingActionButton';
 import ScrollToTop from './components/ScrollToTop';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Pages
 import Home from './pages/Home';
@@ -15,8 +16,9 @@ import Contact from './pages/Contact';
 
 export default function App() {
   return (
-    <Router>
-      <ScrollToTop />
+    <AuthProvider>
+      <Router>
+        <ScrollToTop />
       <div className="min-h-screen flex flex-col font-sans text-gray-900 selection:bg-primary-100 selection:text-primary-900">
         <Navbar />
         <main className="flex-grow">
@@ -33,5 +35,6 @@ export default function App() {
         <FloatingActionButton />
       </div>
     </Router>
+    </AuthProvider>
   );
 }

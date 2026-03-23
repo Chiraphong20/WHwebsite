@@ -15,22 +15,67 @@ interface CartDrawerProps {
   items: CartItem[];
   onRemove: (productId: string | number) => void;
   onQtyChange: (productId: string | number, delta: number) => void;
+  onClear?: () => void;
 }
 
-export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChange }: CartDrawerProps) {
+export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChange, onClear }: CartDrawerProps) {
   const { user, isLoggedIn, login } = useAuth();
 
   const total = items.reduce((sum, i) => sum + Number(i.product.wholesalePrice) * i.qty, 0);
 
-  const handleOrder = () => {
+  const API_URL = import.meta.env.VITE_API_URL || 'https://wh-shop20.vercel.app';
+
+  const handleOrder = async () => {
     if (!isLoggedIn) {
       login();
       return;
     }
-    // Compose LINE message with order summary
-    const text = items.map(i => `• ${i.product.name} x${i.qty} = ฿${(Number(i.product.wholesalePrice) * i.qty).toLocaleString()}`).join('\n');
-    const msg = encodeURIComponent(`สนใจสั่งซื้อสินค้า:\n${text}\n\nรวม: ฿${total.toLocaleString()}`);
-    window.open(`https://line.me/R/oaMessage/@177eggfh/?${msg}`, '_blank');
+
+    try {
+      const payload = {
+        customerName: user?.displayName || 'ลูกค้าจาก LINE',
+        customerContact: '-',
+        address: 'รอการยืนยันที่อยู่จัดส่งทางแชท LINE',
+        deliveryMethod: 'DELIVERY',
+        status: 'PENDING',
+        totalAmount: total,
+        items: items.map(i => ({
+          productId: i.product.id,
+          name: i.product.name,
+          quantity: i.qty,
+          price: i.product.wholesalePrice
+        })),
+        timestamp: new Date().toISOString(),
+        customerLineUserId: user?.userId,
+        customerLineDisplayName: user?.displayName,
+        customerLinePictureUrl: user?.pictureUrl
+      };
+
+      const response = await fetch(`${API_URL}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert('ส่งคำสั่งซื้อเรียบร้อย! ทางร้านจะรีบติดต่อกลับไปทาง LINE นะครับ');
+        if (onClear) onClear();
+        onClose();
+        
+        // Option to still open LINE chat to say hello (uncomment to enable)
+        // const msg = encodeURIComponent(`แจ้งยืนยันการสั่งซื้อจากระบบ รหัสลูกค้า: ${user?.displayName}`);
+        // window.open(`https://line.me/R/oaMessage/@177eggfh/?${msg}`, '_blank');
+      } else {
+        const errData = await response.json();
+        alert(`เกิดข้อผิดพลาด: ${errData.error || 'ไม่สามารถรับออเดอร์ได้'}`);
+      }
+    } catch (error) {
+      console.error('Order Error:', error);
+      alert('ระบบขัดข้อง ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+    }
   };
 
   return (
@@ -143,8 +188,8 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
                 >
                   {isLoggedIn ? (
                     <>
-                      <MessageCircle size={20} />
-                      <span>สั่งซื้อผ่าน LINE</span>
+                      <ShoppingCart size={20} />
+                      <span>ยืนยันการสั่งซื้อ</span>
                       <ChevronRight size={18} />
                     </>
                   ) : (

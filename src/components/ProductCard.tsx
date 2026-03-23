@@ -1,12 +1,13 @@
 import React from 'react';
 import { Product } from '../data/mockData';
+import { ShoppingCart } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
+  onAddToCart?: (product: Product) => void;
 }
 
-
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => (
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
     <div className="relative aspect-square overflow-hidden bg-gray-50">
       <img 
@@ -41,6 +42,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => (
             ซื้อขั้นต่ำ {product.minWholesaleQty} {product.unit} ถึ้งได้ราคานี้
           </div>
         </div>
+        
+        {onAddToCart && (
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
+            className="w-full mt-3 py-3.5 bg-primary-500 text-white text-sm rounded-2xl hover:bg-primary-600 active:scale-95 transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20"
+          >
+            <ShoppingCart size={18} />
+            เพิ่มลงตะกร้า
+          </button>
+        )}
       </div>
     </div>
   </div>
