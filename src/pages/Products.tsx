@@ -7,18 +7,18 @@ import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://wh-shop20.vercel.app';
 const CLOUD_NAME = "dffqpiizc";
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/`;
 
 export default function Products() {
   const [searchParams] = useSearchParams();
   const initialCat = searchParams.get('cat') || 'ทั้งหมด';
-  
+
   const { isLoggedIn, login } = useAuth();
-  const [cartItems, setCartItems] = useState<{product: Product, qty: number}[]>([]);
+  const [cartItems, setCartItems] = useState<{ product: Product, qty: number }[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  
+
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -39,7 +39,7 @@ export default function Products() {
             } else if (!item.image) {
               imageUrl = 'https://placehold.co/400x400?text=No+Image';
             }
-            
+
             return {
               ...item,
               images: typeof item.images === 'string' ? JSON.parse(item.images) : (item.images || []),
@@ -110,7 +110,7 @@ export default function Products() {
             <div className="hidden md:block text-gray-500 font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
               แสดงสินค้า <span className="text-primary-600 font-bold">{filteredProducts.length}</span> รายการ
             </div>
-            <button 
+            <button
               onClick={() => setIsCartOpen(true)}
               className="relative bg-white text-dark p-3.5 rounded-full shadow-sm border border-gray-100 hover:text-primary-600 hover:border-primary-100 hover:-translate-y-1 transition-all"
             >
@@ -134,15 +134,14 @@ export default function Products() {
                 </div>
                 <h2 className="font-bold text-dark text-lg">หมวดหมู่สินค้า</h2>
               </div>
-              
+
               <div className="space-y-1.5 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                 <button
                   onClick={() => setSelectedCategory('ทั้งหมด')}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    selectedCategory === 'ทั้งหมด' 
-                    ? 'bg-primary-50 text-primary-600 shadow-sm border border-primary-100' 
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-dark'
-                  }`}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${selectedCategory === 'ทั้งหมด'
+                      ? 'bg-primary-50 text-primary-600 shadow-sm border border-primary-100'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-dark'
+                    }`}
                 >
                   ทั้งหมด
                 </button>
@@ -150,11 +149,10 @@ export default function Products() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      selectedCategory === cat 
-                      ? 'bg-primary-50 text-primary-600 shadow-sm border border-primary-100' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-dark'
-                    }`}
+                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${selectedCategory === cat
+                        ? 'bg-primary-50 text-primary-600 shadow-sm border border-primary-100'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-dark'
+                      }`}
                   >
                     {cat}
                   </button>
@@ -178,7 +176,7 @@ export default function Products() {
                 className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl shadow-sm border border-gray-200 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-medium text-dark placeholder-gray-400"
               />
               {searchQuery && (
-                <button 
+                <button
                   onClick={() => setSearchQuery('')}
                   className="absolute inset-y-0 right-0 pr-5 flex items-center text-sm font-bold text-gray-400 hover:text-gray-600"
                 >
@@ -203,8 +201,8 @@ export default function Products() {
                     transition={{ duration: 0.3 }}
                     key={product.id}
                   >
-                    <ProductCard 
-                      product={product} 
+                    <ProductCard
+                      product={product}
                       onAddToCart={handleAddToCart}
                     />
                   </motion.div>
@@ -216,7 +214,7 @@ export default function Products() {
                 <h3 className="text-2xl font-bold text-dark mb-2">ไม่พบสินค้าที่ตรงตามเงื่อนไข</h3>
                 <p className="text-gray-500 max-w-sm mx-auto mb-6">ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่สินค้าอื่นดูอีกครั้ง</p>
                 <button
-                  onClick={() => {setSelectedCategory('ทั้งหมด'); setSearchQuery('');}}
+                  onClick={() => { setSelectedCategory('ทั้งหมด'); setSearchQuery(''); }}
                   className="bg-primary-50 text-primary-600 font-bold px-6 py-3 rounded-full hover:bg-primary-100 transition-colors"
                 >
                   ล้างการค้นหาทั้งหมด
@@ -227,7 +225,7 @@ export default function Products() {
         </div>
       </div>
 
-      <CartDrawer 
+      <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         items={cartItems}
