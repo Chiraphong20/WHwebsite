@@ -70,7 +70,6 @@ export default function Products() {
       }
       return [...prev, { product, qty: product.minWholesaleQty || 1 }];
     });
-    setIsCartOpen(true);
   };
 
   const handleRemoveFromCart = (productId: string | number) => {

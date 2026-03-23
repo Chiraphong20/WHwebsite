@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, ShoppingCart, LogIn, Trash2, MessageCircle, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, ShoppingCart, LogIn, Trash2, MessageCircle, ChevronRight, Store, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product } from '../data/mockData';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +20,7 @@ interface CartDrawerProps {
 
 export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChange, onClear }: CartDrawerProps) {
   const { user, isLoggedIn, login } = useAuth();
+  const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
 
   const total = items.reduce((sum, i) => sum + Number(i.product.wholesalePrice) * i.qty, 0);
 
@@ -36,7 +37,7 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
         customerName: user?.displayName || 'ลูกค้าจาก LINE',
         customerContact: '-',
         address: 'รอการยืนยันที่อยู่จัดส่งทางแชท LINE',
-        deliveryMethod: 'DELIVERY',
+        deliveryMethod: deliveryMethod,
         status: 'PENDING',
         totalAmount: total,
         items: items.map(i => ({
@@ -174,8 +175,42 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
 
             {/* Footer */}
             {items.length > 0 && (
-              <div className="border-t border-gray-100 p-5 space-y-4 bg-white">
-                <div className="flex justify-between items-center">
+              <div className="border-t border-gray-100 p-5 space-y-4 bg-white z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                {/* Delivery Option */}
+                <div className="flex flex-col space-y-2.5">
+                  <span className="font-bold text-dark text-sm flex items-center gap-2">
+                    <Truck size={16} className="text-primary-500" />
+                    วิธีการรับสินค้า
+                  </span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setDeliveryMethod('PICKUP')}
+                      className={`relative overflow-hidden py-3 px-3 rounded-2xl border-2 text-sm font-bold transition-all flex flex-col items-center justify-center gap-1.5 ${
+                        deliveryMethod === 'PICKUP' 
+                          ? 'border-primary-500 bg-primary-50 text-primary-600 shadow-sm' 
+                          : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {deliveryMethod === 'PICKUP' && <div className="absolute top-0 right-0 w-8 h-8 bg-primary-100 rounded-bl-full -mr-2 -mt-2"></div>}
+                      <Store size={20} className={deliveryMethod === 'PICKUP' ? 'text-primary-500' : 'text-gray-400'} />
+                      รับเองที่ร้าน
+                    </button>
+                    <button
+                      onClick={() => setDeliveryMethod('DELIVERY')}
+                      className={`relative overflow-hidden py-3 px-3 rounded-2xl border-2 text-sm font-bold transition-all flex flex-col items-center justify-center gap-1.5 ${
+                        deliveryMethod === 'DELIVERY' 
+                          ? 'border-primary-500 bg-primary-50 text-primary-600 shadow-sm' 
+                          : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {deliveryMethod === 'DELIVERY' && <div className="absolute top-0 right-0 w-8 h-8 bg-primary-100 rounded-bl-full -mr-2 -mt-2"></div>}
+                      <Truck size={20} className={deliveryMethod === 'DELIVERY' ? 'text-primary-500' : 'text-gray-400'} />
+                      จัดส่ง
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
                   <span className="font-bold text-gray-600">ยอดรวมทั้งหมด</span>
                   <span className="text-2xl font-extrabold text-primary-600">฿{total.toLocaleString()}</span>
                 </div>
