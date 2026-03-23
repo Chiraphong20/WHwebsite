@@ -17,7 +17,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const LIFF_ID = import.meta.env.VITE_LIFF_ID as string;
-const LINE_LOGIN_URL = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${import.meta.env.VITE_LINE_LOGIN_CHANNEL_ID}&redirect_uri=${encodeURIComponent(window.location.origin + '/products')}&state=wonghiran&scope=profile%20openid`;
+const REDIRECT_URI = import.meta.env.VITE_LINE_REDIRECT_URI || (window.location.origin + '/products');
+const LINE_LOGIN_URL = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${import.meta.env.VITE_LINE_LOGIN_CHANNEL_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=wonghiran&scope=profile%20openid`;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<LineUser | null>(null);
