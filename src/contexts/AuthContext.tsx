@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = () => {
     try {
-      liff.login();
+      liff.login({ redirectUri: window.location.href });
     } catch (e) {
       console.error('Login error:', e);
     }
