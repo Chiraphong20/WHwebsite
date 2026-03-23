@@ -23,7 +23,7 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
 
   const total = items.reduce((sum, i) => sum + Number(i.product.wholesalePrice) * i.qty, 0);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://wh-shop20.vercel.app';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
 
   const handleOrder = async () => {
     if (!isLoggedIn) {
