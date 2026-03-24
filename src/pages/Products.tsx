@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { CATEGORIES, Product } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
+import OrderHistoryModal from '../components/OrderHistoryModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://wh-shop20.vercel.app';
@@ -18,6 +19,7 @@ export default function Products() {
   const { isLoggedIn, login } = useAuth();
   const [cartItems, setCartItems] = useState<{ product: Product, qty: number }[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isOrderHistoryOpen, setIsOrderHistoryOpen] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,10 +107,20 @@ export default function Products() {
               <span className="text-primary-600 font-bold">ชุดสินค้าทั้งหมด</span>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:block text-gray-500 font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
-              แสดงสินค้า <span className="text-primary-600 font-bold">{filteredProducts.length}</span> รายการ
+          <div className="flex items-center space-x-3">
+            <div className="hidden md:block text-gray-500 font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-sm">
+              <span className="text-primary-600 font-bold">{filteredProducts.length}</span> รายการ
             </div>
+            {isLoggedIn && (
+              <button
+                onClick={() => setIsOrderHistoryOpen(true)}
+                className="relative bg-white text-dark p-3 rounded-full sm:px-4 shadow-sm border border-gray-100 hover:text-primary-600 hover:border-primary-100 transition-all flex items-center justify-center gap-2"
+                title="ประวัติการสั่งซื้อ"
+              >
+                <PackageSearch size={22} className="text-primary-500" />
+                <span className="hidden sm:inline text-sm font-bold">ประวัติสั่งซื้อ</span>
+              </button>
+            )}
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative bg-white text-dark p-3.5 rounded-full shadow-sm border border-gray-100 hover:text-primary-600 hover:border-primary-100 hover:-translate-y-1 transition-all"
@@ -231,6 +243,11 @@ export default function Products() {
         onRemove={handleRemoveFromCart}
         onQtyChange={handleQtyChange}
         onClear={() => setCartItems([])}
+      />
+
+      <OrderHistoryModal
+        isOpen={isOrderHistoryOpen}
+        onClose={() => setIsOrderHistoryOpen(false)}
       />
     </div>
   );
