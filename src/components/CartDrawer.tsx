@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShoppingCart, LogIn, Trash2, MessageCircle, ChevronRight, Store, Truck } from 'lucide-react';
+import { X, ShoppingCart, LogIn, Trash2, MessageCircle, ChevronRight, Store, Truck, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product } from '../data/mockData';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +22,21 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
   const { user, isLoggedIn, login } = useAuth();
   const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
 
+  const [customerNameInput, setCustomerNameInput] = useState('');
+  const [customerPhoneInput, setCustomerPhoneInput] = useState('');
+  const [customerAddressInput, setCustomerAddressInput] = useState('');
+  const [orderNoteInput, setOrderNoteInput] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const LINE_OA_URL = 'https://lin.ee/7aOjZI9';
+  const LINE_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(LINE_OA_URL)}`;
+
+  React.useEffect(() => {
+    if (user?.displayName && !customerNameInput) {
+      setCustomerNameInput(user.displayName);
+    }
+  }, [user]);
+
   const total = items.reduce((sum, i) => sum + Number(i.product.wholesalePrice) * i.qty, 0);
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
@@ -32,11 +47,25 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
       return;
     }
 
+    if (!customerNameInput.trim()) {
+      alert('กรุณากรอกชื่อผู้ติดต่อ');
+      return;
+    }
+    if (!customerPhoneInput.trim()) {
+      alert('กรุณากรอกเบอร์โทรติดต่อ');
+      return;
+    }
+    if (deliveryMethod === 'DELIVERY' && !customerAddressInput.trim()) {
+      alert('กรุณากรอกที่อยู่จัดส่ง');
+      return;
+    }
+
     try {
       const payload = {
-        customerName: user?.displayName || 'ลูกค้าจาก LINE',
-        customerContact: '-',
-        address: 'รอการยืนยันที่อยู่จัดส่งทางแชท LINE',
+        customerName: customerNameInput.trim(),
+        customerContact: customerPhoneInput.trim(),
+        address: deliveryMethod === 'DELIVERY' ? customerAddressInput.trim() : 'รับเองที่ร้าน',
+        note: orderNoteInput.trim(),
         deliveryMethod: deliveryMethod,
         status: 'PENDING',
         totalAmount: total,
@@ -44,7 +73,9 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
           productId: i.product.id,
           name: i.product.name,
           quantity: i.qty,
-          price: i.product.wholesalePrice
+          price: i.product.wholesalePrice,
+          productName: i.product.name,
+          productPrice: i.product.wholesalePrice
         })),
         timestamp: new Date().toISOString(),
         customerLineUserId: user?.userId,
@@ -62,13 +93,8 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
       });
 
       if (response.ok) {
-        alert('ส่งคำสั่งซื้อเรียบร้อย! ทางร้านจะรีบติดต่อกลับไปทาง LINE นะครับ');
         if (onClear) onClear();
-        onClose();
-        
-        // Option to still open LINE chat to say hello (uncomment to enable)
-        // const msg = encodeURIComponent(`แจ้งยืนยันการสั่งซื้อจากระบบ รหัสลูกค้า: ${user?.displayName}`);
-        // window.open(`https://line.me/R/oaMessage/@177eggfh/?${msg}`, '_blank');
+        setShowSuccessModal(true);
       } else {
         const errData = await response.json();
         alert(`เกิดข้อผิดพลาด: ${errData.error || 'ไม่สามารถรับออเดอร์ได้'}`);
@@ -80,8 +106,9 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <>
+      <AnimatePresence>
+        {isOpen && (
         <>
           {/* Overlay */}
           <motion.div
@@ -171,6 +198,43 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
                   </div>
                 ))
               )}
+
+              {/* User Details Form */}
+              {items.length > 0 && (
+                <div className="mt-6 space-y-3 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                  <span className="font-bold text-dark text-sm">ข้อมูลติดต่อและจัดส่ง</span>
+                  <input
+                    type="text"
+                    placeholder="ชื่อผู้ติดต่อ *"
+                    value={customerNameInput}
+                    onChange={e => setCustomerNameInput(e.target.value)}
+                    className="w-full text-sm py-2.5 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors bg-gray-50/50"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="เบอร์โทรติดต่อ *"
+                    value={customerPhoneInput}
+                    onChange={e => setCustomerPhoneInput(e.target.value)}
+                    className="w-full text-sm py-2.5 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors bg-gray-50/50"
+                  />
+                  {deliveryMethod === 'DELIVERY' && (
+                    <textarea
+                      placeholder="ที่อยู่จัดส่ง *"
+                      rows={2}
+                      value={customerAddressInput}
+                      onChange={e => setCustomerAddressInput(e.target.value)}
+                      className="w-full text-sm py-2.5 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors resize-none bg-gray-50/50"
+                    />
+                  )}
+                  <textarea
+                    placeholder="หมายเหตุ (เพิ่มเติม)"
+                    rows={2}
+                    value={orderNoteInput}
+                    onChange={e => setOrderNoteInput(e.target.value)}
+                    className="w-full text-sm py-2.5 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors resize-none bg-gray-50/50"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Footer */}
@@ -242,6 +306,80 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-3xl p-6 max-w-xs sm:max-w-sm w-full shadow-2xl flex flex-col items-center text-center relative"
+            >
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  onClose();
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-1.5 transition-colors pl"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-4 mt-2">
+                <Check size={32} className="stroke-[3]" />
+              </div>
+
+              <h3 className="text-xl font-bold text-dark mb-2">สั่งซื้อสำเร็จ!</h3>
+              <p className="text-gray-600 text-sm mb-5 leading-relaxed">
+                ระบบได้รับคำสั่งซื้อของคุณแล้ว<br/>
+                <span className="font-bold text-primary-600">อยากให้แอดมินรับออเดอร์ไว ๆ</span><br/>
+                ทัก LINE OA ของทางร้านได้เลยครับ!
+              </p>
+
+              <div className="bg-gray-50 p-4 rounded-2xl mb-6 border border-gray-100 w-full flex flex-col items-center">
+                <img src={LINE_QR_URL} alt="LINE OA QR Code" className="w-32 h-32 rounded-xl mb-3 shadow-sm border border-gray-200" />
+                <p className="font-bold text-sm text-gray-700">@177eggfh</p>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  📌 <span className="font-semibold">สั่งสินค้าโดยตรงกับแอดมิน</span><br/>
+                  <a href={LINE_OA_URL} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline inline-block mt-0.5">
+                    {LINE_OA_URL}
+                  </a>
+                </p>
+              </div>
+
+              <a
+                href={LINE_OA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  onClose();
+                }}
+                className="w-full bg-[#00B900] hover:bg-[#009900] text-white py-3.5 rounded-xl font-bold flex items-center justify-center space-x-2 transition-colors shadow-lg shadow-[#00B900]/30"
+              >
+                <MessageCircle size={20} />
+                <span>เพิ่มเพื่อน / เปิดแชท LINE OA</span>
+              </a>
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  onClose();
+                }}
+                className="mt-4 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                ปิดหน้าต่างนี้
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
