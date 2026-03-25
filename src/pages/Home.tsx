@@ -55,100 +55,12 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-gray-50 overflow-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-[92vh] flex items-center pt-20 pb-12 overflow-hidden bg-primary-50">
-        {/* Background Decorative Circles */}
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-primary-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-72 h-72 bg-accent rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col md:flex-row items-center justify-between">
-          {/* Text Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="w-full md:w-1/2 pt-10 md:pt-0"
-          >
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white shadow-sm border border-primary-100 text-primary-600 font-semibold text-sm mb-6">
-              <Star className="w-4 h-4 mr-2 text-accent" fill="currentColor" />
-              ประสบการณ์กว่า 10 ปี โกดัง 4 สาขา
-            </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold text-dark leading-tight mb-6">
-              วงษ์หิรัญ<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-600">
-                ฟุคุโระค้าส่ง
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-gray-600 font-medium mb-10 leading-relaxed max-w-lg">
-              อาณาจักรค้าส่งสินค้า 20 บาทที่ใหญ่และคุ้มค่าที่สุดในโคราช มั่นใจได้ในมาตรฐาน ราคา และบริการที่ครอบคลุมสำหรับร้านค้าของคุณ
-            </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link
-                to="/products"
-                className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-300 bg-primary-500 rounded-2xl hover:bg-primary-600 hover:shadow-lg hover:shadow-primary-500/30 overflow-hidden"
-              >
-                <span className="relative z-10 flex items-center space-x-2">
-                  <span>เริ่มช้อปสินค้าทันที</span>
-                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </span>
-                <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-              </Link>
-              <Link
-                to="/packages"
-                className="inline-flex items-center justify-center px-8 py-4 font-bold text-primary-600 bg-white border-2 border-primary-100 rounded-2xl hover:border-primary-500 hover:bg-primary-50 transition-all duration-300"
-              >
-                แพ็กเกจเปิดร้าน
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Hero Image/Mascot */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
-            className="w-full md:w-1/2 mt-16 md:mt-0 flex justify-center relative"
-          >
-            {/* Glowing Backdrop */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-b from-primary-300/20 to-accent/20 rounded-full blur-3xl -z-10"></div>
-            
-            <motion.div 
-              className="relative w-72 h-72 md:w-96 md:h-96 z-10"
-              animate={{ y: [-15, 15, -15] }}
-              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-            >
-              <img 
-                src="/images/้home/1024303_0-removebg-preview.png" 
-                alt="Fukuro Cat Mascot" 
-                className="w-full h-full object-contain filter drop-shadow-2xl"
-              />
-              
-              {/* Floating Badges */}
-              <motion.div 
-                animate={{ y: [-10, 10, -10] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 1 }}
-                className="absolute top-4 -left-8 md:-left-12 glass px-4 py-3 rounded-2xl flex items-center space-x-3 shadow-lg"
-              >
-                <div className="bg-green-100 p-2 rounded-full"><TrendingUp className="text-green-600 w-5 h-5" /></div>
-                <div>
-                  <div className="text-xs text-gray-500 font-medium">ยอดขายปัง</div>
-                  <div className="text-sm font-bold text-dark">กำไรเน้นๆ</div>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                animate={{ y: [10, -10, 10] }}
-                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }}
-                className="absolute bottom-8 -right-8 md:-right-12 glass px-4 py-3 rounded-2xl flex items-center space-x-3 shadow-lg"
-              >
-                <div className="bg-primary-100 p-2 rounded-full"><Package className="text-primary-600 w-5 h-5" /></div>
-                <div>
-                  <div className="text-xs text-gray-500 font-medium">สินค้าพร้อมส่ง</div>
-                  <div className="text-sm font-bold text-dark">1,000+ รายการ</div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </div>
+      <section className="relative w-full pt-16 md:pt-20 bg-primary-50">
+        <img 
+          src="/images/้home/วงษ์หิรัญ.svg" 
+          alt="วงษ์หิรัญ ฟุคุโระค้าส่ง Banner" 
+          className="w-full h-auto object-cover sm:object-contain"
+        />
       </section>
 
       {/* Marquee Ticker */}
