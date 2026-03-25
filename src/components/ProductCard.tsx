@@ -4,10 +4,13 @@ import { ShoppingCart } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
+  cartQty?: number;
   onAddToCart?: (product: Product) => void;
+  onUpdateQty?: (product: Product, delta: number) => void;
+  onSetQty?: (product: Product, qty: number) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
+const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart, onUpdateQty, onSetQty }) => (
   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
     <div className="relative aspect-square overflow-hidden bg-gray-50">
       <img 
@@ -43,18 +46,54 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => (
           </div>
         </div>
         
-        {onAddToCart && (
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
-            className="w-full mt-3 py-3.5 bg-primary-500 text-white text-sm rounded-2xl hover:bg-primary-600 active:scale-95 transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20"
-          >
-            <ShoppingCart size={18} />
-            เพิ่มลงตะกร้า
-          </button>
+        {cartQty !== undefined && cartQty > 0 ? (
+          <div className="w-full mt-3 h-[46px] flex items-center justify-between bg-primary-50 rounded-2xl border border-primary-200 p-1 shadow-inner">
+            <button 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (onUpdateQty) onUpdateQty(product, -1); }}
+              className="w-9 h-9 flex-shrink-0 rounded-xl bg-white text-primary-600 font-bold shadow-sm hover:bg-primary-100 flex items-center justify-center active:scale-95 transition-all"
+            >
+              -
+            </button>
+            <input 
+              type="number"
+              value={cartQty || ''}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onChange={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const val = parseInt(e.target.value);
+                if (!isNaN(val) && onSetQty) onSetQty(product, val);
+                if (e.target.value === '' && onSetQty) onSetQty(product, 0);
+              }}
+              onBlur={(e) => {
+                const val = parseInt(e.target.value);
+                if (isNaN(val) || val <= 0) {
+                  if (onSetQty) onSetQty(product, 0);
+                }
+              }}
+              className="flex-1 w-full min-w-0 text-center bg-transparent font-extrabold text-dark focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <button 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (onUpdateQty) onUpdateQty(product, 1); }}
+              className="w-9 h-9 flex-shrink-0 rounded-xl bg-primary-500 text-white font-bold shadow-sm hover:bg-primary-600 flex items-center justify-center active:scale-95 transition-all"
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          onAddToCart && (
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddToCart(product);
+              }}
+              className="w-full mt-3 py-3.5 bg-primary-500 text-white text-sm rounded-2xl hover:bg-primary-600 active:scale-95 transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20"
+            >
+              <ShoppingCart size={18} />
+              เพิ่มลงตะกร้า
+            </button>
+          )
         )}
       </div>
     </div>

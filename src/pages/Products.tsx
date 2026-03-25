@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Filter, ChevronRight, Loader2, PackageSearch, MessageCircle, ShoppingCart } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { CATEGORIES, Product } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
@@ -20,6 +20,7 @@ export default function Products() {
   const [cartItems, setCartItems] = useState<{ product: Product, qty: number }[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrderHistoryOpen, setIsOrderHistoryOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +61,11 @@ export default function Products() {
     fetchProducts();
   }, []);
 
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const handleAddToCart = (product: Product) => {
     if (!isLoggedIn) {
       login();
@@ -72,6 +78,7 @@ export default function Products() {
       }
       return [...prev, { product, qty: product.minWholesaleQty || 1 }];
     });
+    showToast('เพิ่มลงตะกร้าแล้ว');
   };
 
   const handleRemoveFromCart = (productId: string | number) => {
@@ -79,10 +86,25 @@ export default function Products() {
   };
 
   const handleQtyChange = (productId: string | number, delta: number) => {
+    setCartItems(prev => {
+      const existing = prev.find(item => item.product.id === productId);
+      if (!existing) return prev;
+      const newQty = existing.qty + delta;
+      if (newQty <= 0) {
+        return prev.filter(item => item.product.id !== productId);
+      }
+      return prev.map(item => item.product.id === productId ? { ...item, qty: newQty } : item);
+    });
+  };
+
+  const handleSetQty = (productId: string | number, qty: number) => {
+    if (qty <= 0) {
+      handleRemoveFromCart(productId);
+      return;
+    }
     setCartItems(prev => prev.map(item => {
       if (item.product.id === productId) {
-        const newQty = Math.max(1, item.qty + delta);
-        return { ...item, qty: newQty };
+        return { ...item, qty };
       }
       return item;
     }));
@@ -214,7 +236,10 @@ export default function Products() {
                   >
                     <ProductCard
                       product={product}
+                      cartQty={cartItems.find(item => item.product.id === product.id)?.qty}
                       onAddToCart={handleAddToCart}
+                      onUpdateQty={(p, delta) => handleQtyChange(p.id, delta)}
+                      onSetQty={(p, qty) => handleSetQty(p.id, qty)}
                     />
                   </motion.div>
                 ))}
@@ -235,6 +260,43 @@ export default function Products() {
           </main>
         </div>
       </div>
+
+      {/* Floating Cart Button */}
+      {cartItems.length > 0 && (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsCartOpen(true)}
+          className="fixed bottom-24 right-6 z-40 bg-primary-500 text-white p-4 rounded-full shadow-xl hover:shadow-2xl hover:bg-primary-600 transition-all flex items-center justify-center border-4 border-white"
+          title="เปิดตะกร้าสินค้า"
+        >
+          <ShoppingCart size={28} />
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+            {cartItems.reduce((acc, item) => acc + item.qty, 0)}
+          </span>
+        </motion.button>
+      )}
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 bg-dark text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-3 font-bold text-sm border border-gray-700 pointer-events-none"
+          >
+            <div className="w-6 h-6 bg-[#06C755] rounded-full flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <CartDrawer
         isOpen={isCartOpen}
