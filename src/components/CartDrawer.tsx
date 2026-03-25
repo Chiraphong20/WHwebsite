@@ -39,6 +39,9 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
 
   const total = items.reduce((sum, i) => sum + Number(i.product.wholesalePrice) * i.qty, 0);
 
+  const draftMessage = `สวัสดีครับ/ค่ะ แจ้งโอนเงิน / คอนเฟิร์มออเดอร์ครับ\nชื่อ: ${customerNameInput}\nเบอร์โทร: ${customerPhoneInput}\nยอดรวม: ฿${total.toLocaleString()}`;
+  const LINE_OA_WITH_MESSAGE_URL = `https://line.me/R/oaMessage/@177eggfh/?${encodeURIComponent(draftMessage)}`;
+
   const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
 
   const handleOrder = async () => {
@@ -355,7 +358,7 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
               </div>
 
               <a
-                href={LINE_OA_URL}
+                href={LINE_OA_WITH_MESSAGE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => {
@@ -365,7 +368,7 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
                 className="w-full bg-[#00B900] hover:bg-[#009900] text-white py-3.5 rounded-xl font-bold flex items-center justify-center space-x-2 transition-colors shadow-lg shadow-[#00B900]/30"
               >
                 <MessageCircle size={20} />
-                <span>เพิ่มเพื่อน / เปิดแชท LINE OA</span>
+                <span>ทักแชทแจ้งแอดมิน / ส่งสลิป</span>
               </a>
               <button
                 onClick={() => {
