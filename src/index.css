@@ -18,7 +18,7 @@
   --color-dark: #18181b;   /* Almost black for premium contrast */
   
   --animate-float: float 6s ease-in-out infinite;
-  --animate-marquee: marquee 25s linear infinite;
+  --animate-marquee: marquee 60s linear infinite;
 
   @keyframes float {
     0% { transform: translateY(0px); }

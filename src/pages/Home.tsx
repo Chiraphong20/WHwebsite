@@ -10,9 +10,11 @@ const CLOUD_NAME = "dffqpiizc";
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/`;
 
 const categories = [
-  "ของเล่นเด็ก", "เครื่องเขียน", "กีฬากลางแจ้ง", "เครื่องครัว",
+  "ของเล่นเด็ก", "เครื่องเขียน", "กีฬา", "เครื่องครัว",
   "กิ๊ฟช็อป", "เครื่องบูชา", "อุปกรณ์ไอที", "ของใช้ในบ้าน",
-  "เบ็ดเตล็ด", "เครื่องมือช่าง", "ความงาม", "อุปกรณ์สัตว์เลี้ยง"
+  "เบ็ดเตล็ด", "เครื่องมือช่าง", "ความงาม", "อุปกรณ์สัตว์เลี้ยง",
+  "ของใช้ในรถ", "พลาสติก", "อุปกรณ์ไฟฟ้า", "เครื่องใช้ไฟฟ้า", "เซรามิค"
+  , "อุปกรณ์แคมปิ้ง", "อุปกรณ์ทำความสะอาด"
 ];
 
 export default function Home() {
@@ -56,10 +58,13 @@ export default function Home() {
     <div className="flex flex-col bg-gray-50 overflow-hidden">
       {/* Hero Section */}
       <section className="relative w-full pt-16 md:pt-20 bg-primary-50">
-        <img 
-          src="/images/้home/วงษ์หิรัญ.svg" 
-          alt="วงษ์หิรัญ ฟุคุโระค้าส่ง Banner" 
+        <img
+          src="/images/้home/วงษ์หิรัญ.webp"
+          alt="วงษ์หิรัญ ฟุคุโระค้าส่ง Banner"
           className="w-full h-auto object-cover sm:object-contain"
+          // @ts-ignore - fetchPriority is supported in modern browsers but may not be in current React types
+          fetchPriority="high"
+          loading="eager"
         />
       </section>
 
@@ -67,7 +72,7 @@ export default function Home() {
       <div className="bg-primary-500 py-4 overflow-hidden border-y border-primary-600/50">
         <div className="flex w-max animate-marquee space-x-12 px-6">
           {/* Duplicate the array exactly twice. The animation moves -50%, which equals exactly one full set. */}
-          {[...categories, ...categories, ...categories, ...categories, ...categories, ...categories, ...categories, ...categories].map((category, index) => (
+          {[...categories, ...categories].map((category, index) => (
             <span key={index} className="text-white/90 font-semibold text-lg flex items-center shrink-0">
               <span className="w-2.5 h-2.5 rounded-full bg-accent mr-4 shadow-sm"></span>
               <span className="tracking-wide shadow-sm">{category}</span>
@@ -102,7 +107,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-5xl font-bold text-dark mb-6">ทำไมลูกค้ากว่า 1,500 รายถึงเลือกเรา?</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">จุดเด่น 3 ประการที่เป็นหัวใจหลักของวงษ์หิรัญ ที่ทำให้ธุรกิจของคุณเติบโตไปพร้อมกับเรา</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { icon: <Star size={32} />, title: 'ราคา (Price)', desc: 'เราให้ราคาขายส่งที่คุ้มค่าที่สุด ช่วยเพิ่มส่วนต่างกำไรให้ร้านค้าของคุณ ทำให้ร้าน 20 บาทของคุณโตได้ไว' },
@@ -172,7 +177,7 @@ export default function Home() {
                   <div className="p-6 flex-1 flex flex-col">
                     <p className="text-xs text-primary-600 font-bold mb-2 uppercase tracking-wide bg-primary-50 inline-block px-2 py-1 rounded w-fit">{product.category}</p>
                     <h3 className="font-semibold text-dark text-lg line-clamp-2 mb-4 group-hover:text-primary-600 transition-colors flex-1">{product.name}</h3>
-                    
+
                     <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
                       <div>
                         <div className="text-xs text-gray-500 font-medium mb-1">ราคาส่งเริ่มต้น</div>
@@ -196,7 +201,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
               <span>Facebook Reels</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold text-dark mb-4">ดูบรรยากาศร้านค้าจริง</h2>
@@ -240,11 +245,11 @@ export default function Home() {
         {/* Abstract Overlays */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white opacity-5 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent opacity-10 rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/3"></div>
-        
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20">
           <h2 className="text-4xl md:text-6xl font-extrabold text-white mb-8 drop-shadow-sm">พร้อมจะเป็นเจ้าของร้าน 20 บาทหรือยัง?</h2>
           <p className="text-xl text-white/90 mb-12 leading-relaxed font-medium">
-            เรามีแพ็กเกจสำเร็จรูปสำหรับคนเริ่มต้น พร้อมให้คำปรึกษาฟรี<br className="hidden md:block"/> 
+            เรามีแพ็กเกจสำเร็จรูปสำหรับคนเริ่มต้น พร้อมให้คำปรึกษาฟรี<br className="hidden md:block" />
             ตั้งแต่การเลือกสินค้าไปจนถึงการจัดร้านด้วยทีมงานมืออาชีพ
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">

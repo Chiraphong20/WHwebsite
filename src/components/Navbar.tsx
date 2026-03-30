@@ -34,7 +34,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="w-12 h-12 rounded-full overflow-hidden bg-white shadow-sm border border-orange-100 group-hover:shadow-md transition-shadow">
-              <img src="/images/้home/1024303_0-removebg-preview.png" alt="Fukuro Cat Logo" className="w-full h-full object-contain p-1" />
+              <img src="/images/โลโก้.svg" alt="วงษ์หิรัญค้าส่ง Logo" className="w-full h-auto object-contain p-0.5" />
             </div>
             <span className={`font-bold text-2xl tracking-tight transition-colors ${scrolled ? 'text-dark' : 'text-gray-900'}`}>
               วงษ์หิรัญ<span className="text-primary-500">ค้าส่ง</span>
