@@ -13,6 +13,7 @@ export default function About() {
             src="/images/about/Screenshot 2026-03-21 190740.png"
             alt="โกดังวงษ์หิรัญ"
             className="w-full h-full object-cover opacity-30"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
         </div>
@@ -95,6 +96,7 @@ export default function About() {
                 src="/images/about/Screenshot 2026-03-21 190740.png"
                 alt="โกดังวงษ์หิรัญ"
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-dark text-white p-5 rounded-2xl shadow-xl hidden md:block border border-primary-500/30">

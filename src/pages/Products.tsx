@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, ChevronRight, Loader2, PackageSearch, MessageCircle, ShoppingCart } from 'lucide-react';
+import { Search, Filter, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Loader2, PackageSearch, MessageCircle, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CATEGORIES, Product } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
@@ -24,9 +24,20 @@ export default function Products() {
 
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 100;
+
+  // Reset to first page when category or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(['ทั้งหมด', ...CATEGORIES]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -134,6 +145,17 @@ export default function Products() {
     return matchesCategory && matchesSearch;
   });
 
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="pt-28 pb-20 min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -234,25 +256,98 @@ export default function Products() {
                 <p className="text-gray-500 font-medium text-lg">กำลังโหลดรายการสินค้า...</p>
               </div>
             ) : filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                    key={product.id}
-                  >
-                    <ProductCard
-                      product={product}
-                      cartQty={cartItems.find(item => item.product.id === product.id)?.qty}
-                      onAddToCart={handleAddToCart}
-                      onUpdateQty={(p, delta) => handleQtyChange(p.id, delta)}
-                      onSetQty={(p, qty) => handleSetQty(p.id, qty)}
-                    />
-                  </motion.div>
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {paginatedProducts.map((product) => (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      key={product.id}
+                    >
+                      <ProductCard
+                        product={product}
+                        cartQty={cartItems.find(item => item.product.id === product.id)?.qty}
+                        onAddToCart={handleAddToCart}
+                        onUpdateQty={(p, delta) => handleQtyChange(p.id, delta)}
+                        onSetQty={(p, qty) => handleSetQty(p.id, qty)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Pagination UI */}
+                {totalPages > 1 && (
+                  <div className="mt-12 flex flex-col items-center gap-6">
+                    <div className="text-sm text-gray-500 font-medium">
+                      กำลังแสดง <span className="text-primary-600 font-bold">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> ถึง <span className="text-primary-600 font-bold">{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)}</span> จากทั้งหมด <span className="text-primary-600 font-bold">{filteredProducts.length}</span> รายการ
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className="p-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-primary-600 hover:border-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                      >
+                        <ChevronsLeft size={20} />
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="p-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-primary-600 hover:border-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+
+                      <div className="flex items-center gap-1.5 px-2">
+                        {[...Array(totalPages)].map((_, i) => {
+                          const pageNum = i + 1;
+                          // Only show first, last, and pages around current
+                          if (
+                            pageNum === 1 ||
+                            pageNum === totalPages ||
+                            (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                          ) {
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => handlePageChange(pageNum)}
+                                className={`w-11 h-11 rounded-xl text-sm font-bold transition-all ${currentPage === pageNum
+                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30 border-2 border-primary-400 scale-110'
+                                    : 'bg-white border border-gray-100 text-gray-400 hover:text-dark hover:border-gray-300'
+                                  }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          } else if (
+                            pageNum === currentPage - 2 ||
+                            pageNum === currentPage + 2
+                          ) {
+                            return <span key={pageNum} className="text-gray-300 px-1">...</span>;
+                          }
+                          return null;
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="p-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-primary-600 hover:border-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="p-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-primary-600 hover:border-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                      >
+                        <ChevronsRight size={20} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-center py-32 bg-white rounded-3xl shadow-sm border border-dashed border-gray-200 flex flex-col items-center justify-center">
                 <PackageSearch size={64} className="text-gray-300 mb-6" />

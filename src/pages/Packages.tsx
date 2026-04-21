@@ -77,6 +77,7 @@ export default function Packages() {
                   alt={pkg.name}
                   className="w-full h-auto max-h-64 object-contain"
                   referrerPolicy="no-referrer"
+                  loading="lazy"
                 />
               </div>
               <div className="p-8 flex-1 flex flex-col">
@@ -135,7 +136,7 @@ export default function Packages() {
                 className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col items-center shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="w-full aspect-square flex items-center justify-center p-4 bg-gray-50 rounded-2xl mb-4 overflow-hidden">
-                  <img src={equipment.src} alt={equipment.label} className="max-w-full max-h-full object-contain" />
+                  <img src={equipment.src} alt={equipment.label} className="max-w-full max-h-full object-contain" loading="lazy" />
                 </div>
                 <h3 className="font-bold text-gray-900 text-lg text-center">{equipment.label}</h3>
               </motion.div>
@@ -278,6 +279,7 @@ export default function Packages() {
                 src={`/images/activity/${imgUrl}`} 
                 alt={`กิจกรรมร้านค้า ${idx + 1}`} 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <ImageIcon className="text-white w-8 h-8 opacity-75" />

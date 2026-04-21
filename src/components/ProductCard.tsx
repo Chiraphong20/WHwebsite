@@ -17,6 +17,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
         src={product.image} 
         alt={product.name} 
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+        loading="lazy"
       />
       {product.isBestSeller && (
         <span className="absolute top-4 left-4 bg-accent/90 backdrop-blur-sm text-dark text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
