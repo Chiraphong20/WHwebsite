@@ -23,7 +23,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center space-x-4 pt-1">
               <a
-                href="https://www.facebook.com/วงษ์หิรัญค้าส่ง20โคราช"
+                href="https://www.facebook.com/wonghiran20korat"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-800 hover:bg-blue-600 transition-colors"
@@ -95,7 +95,7 @@ export default function Footer() {
             </div>
             <div className="flex items-center space-x-3 text-sm">
               <Mail size={17} className="text-red-500 shrink-0" />
-              <a href="mailto:fukurouretail@gmail.com" className="hover:text-white transition-colors break-all">fukurouretail@gmail.com</a>
+              <a href="mailto:wonghirangroup@gmail.com" className="hover:text-white transition-colors break-all">wonghirangroup@gmail.com</a>
             </div>
             <div className="flex items-start space-x-3 text-sm">
               <Clock size={17} className="text-red-500 shrink-0 mt-0.5" />

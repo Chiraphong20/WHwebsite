@@ -1,22 +1,29 @@
 import React from 'react';
-import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import { ChevronRight, Phone, Mail, MapPin, Clock, Facebook, MessageCircle, Send } from 'lucide-react';
 import { motion } from 'motion/react';
 
-const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  '';
-const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
+// Fix Leaflet icon issue in Production
+// @ts-ignore
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
-const STORE_LOCATION = { lat: 14.9737, lng: 102.0827 }; // Example: Nakhon Ratchasima
+const STORE_LOCATION: [number, number] = [14.999589298072463, 102.11873818037388];
+const LINE_OA_LINK = 'https://line.me/R/ti/p/@177eggfh';
+const FACEBOOK_LINK = 'https://www.facebook.com/wonghiran20korat';
+const EMAIL = 'wonghirangroup@gmail.com';
 
 export default function Contact() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    alert('ขอบคุณที่ติดต่อเรา เราจะติดต่อกลับโดยเร็วที่สุด');
+    // Redirect to Line OA for contact
+    window.open(LINE_OA_LINK, '_blank');
   };
 
   return (
@@ -47,12 +54,12 @@ export default function Contact() {
           </a>
 
           {/* Email */}
-          <a href="mailto:fukurouretail@gmail.com" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-blue-100 transition-all group">
+          <a href={`mailto:${EMAIL}`} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-blue-100 transition-all group">
             <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto group-hover:bg-blue-600 group-hover:text-white transition-colors">
               <Mail size={24} />
             </div>
             <h3 className="font-bold text-gray-900">Email</h3>
-            <p className="text-gray-600 text-sm font-medium break-all">fukurouretail@gmail.com</p>
+            <p className="text-gray-600 text-sm font-medium break-all">{EMAIL}</p>
           </a>
 
           {/* TikTok */}
@@ -64,13 +71,13 @@ export default function Contact() {
             <p className="text-gray-600 text-sm font-medium">@wonghiran20korat</p>
           </a>
 
-          {/* Messenger / Facebook */}
-          <a href="https://m.me/วงษ์หิรัญค้าส่ร20โคราช" target="_blank" rel="noopener noreferrer" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-blue-100 transition-all group">
-            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mx-auto group-hover:bg-blue-500 group-hover:text-white transition-colors">
-              <MessageCircle size={24} />
+          {/* Facebook */}
+          <a href={FACEBOOK_LINK} target="_blank" rel="noopener noreferrer" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-blue-100 transition-all group">
+            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <Facebook size={24} />
             </div>
-            <h3 className="font-bold text-gray-900">Messenger</h3>
-            <p className="text-gray-600 text-sm font-medium">วงษ์หิรัญค้าส่ร20โคราช</p>
+            <h3 className="font-bold text-gray-900">Facebook</h3>
+            <p className="text-gray-600 text-sm font-medium">วงษ์หิรัญค้าส่ง20โคราช</p>
           </a>
         </div>
 
@@ -146,30 +153,28 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Google Maps */}
-            <div className="h-[350px] rounded-3xl overflow-hidden shadow-sm border border-gray-100">
-              {!hasValidKey ? (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center p-8 text-center">
-                  <div>
-                    <MapPin size={48} className="text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 font-medium">กรุณาตั้งค่า Google Maps API Key เพื่อแสดงแผนที่</p>
-                  </div>
-                </div>
-              ) : (
-                <APIProvider apiKey={API_KEY} version="weekly">
-                  <Map
-                    defaultCenter={STORE_LOCATION}
-                    defaultZoom={15}
-                    mapId="DEMO_MAP_ID"
-                    internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
-                    style={{ width: '100%', height: '100%' }}
-                  >
-                    <AdvancedMarker position={STORE_LOCATION}>
-                      <Pin background="#dc2626" glyphColor="#fff" />
-                    </AdvancedMarker>
-                  </Map>
-                </APIProvider>
-              )}
+            {/* React Leaflet Map with Google Maps Layer */}
+            <div className="h-[350px] rounded-3xl overflow-hidden shadow-sm border border-gray-100 relative z-0">
+              <MapContainer
+                center={STORE_LOCATION}
+                zoom={18}
+                scrollWheelZoom={false}
+                style={{ width: '100%', height: '100%' }}
+              >
+                <TileLayer
+                  attribution="&copy; Google Maps"
+                  url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+                  subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+                />
+                <Marker position={STORE_LOCATION}>
+                  <Popup>
+                    <div className="text-center">
+                      <p className="font-bold">วงษ์หิรัญค้าส่ง</p>
+                      <p className="text-xs">476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              </MapContainer>
             </div>
           </div>
         </div>
