@@ -64,7 +64,7 @@ export default function Packages() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.2 }}
-              className={`bg-white rounded-3xl overflow-hidden shadow-sm border flex flex-col relative ${idx === 1 ? 'border-primary-500 shadow-xl shadow-red-500/10 scale-105 z-10' : 'border-gray-100'}`}
+              className={`bg-white rounded-3xl overflow-hidden shadow-sm border flex flex-col relative ${idx === 1 ? 'border-primary-500 shadow-xl shadow-primary-500/10 scale-105 z-10' : 'border-gray-100'}`}
             >
               {idx === 1 && (
                 <div className="absolute top-0 inset-x-0 bg-primary-600 text-white text-sm font-bold text-center py-1.5 uppercase tracking-widest">
@@ -104,7 +104,7 @@ export default function Packages() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`w-full py-4 rounded-2xl font-bold text-center transition-all flex items-center justify-center space-x-2 ${
-                    idx === 1 ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-md' : 'bg-primary-50 text-primary-600 hover:bg-red-100'
+                    idx === 1 ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-md' : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
                   }`}
                 >
                   <MessageCircle size={20} />

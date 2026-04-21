@@ -2,7 +2,7 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { ChevronRight, Phone, Mail, MapPin, Clock, Facebook, MessageCircle, Send } from 'lucide-react';
+import { ChevronRight, Phone, Mail, MapPin, Clock, Facebook, Send, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
 
 // Fix Leaflet icon issue in Production
@@ -19,142 +19,221 @@ const LINE_OA_LINK = 'https://line.me/R/ti/p/@177eggfh';
 const FACEBOOK_LINK = 'https://www.facebook.com/wonghiran20korat';
 const EMAIL = 'wonghirangroup@gmail.com';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export default function Contact() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Redirect to Line OA for contact
     window.open(LINE_OA_LINK, '_blank');
   };
 
   return (
-    <div className="pt-24 pb-20 min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center text-sm text-gray-500 space-x-2 mb-4">
-            <span>หน้าแรก</span>
-            <ChevronRight size={14} />
-            <span className="text-primary-600 font-medium">ติดต่อเรา</span>
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">ติดต่อสอบถามข้อมูล</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            มีคำถามหรือต้องการปรึกษาเรื่องการเปิดร้าน สามารถติดต่อเราได้ทุกช่องทาง 
-            เรายินดีให้คำแนะนำอย่างเต็มที่
-          </p>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-24 bg-white overflow-hidden border-b border-zinc-100">
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[140px]" />
+          <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary-600/5 rounded-full blur-[120px]" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-center text-xs font-black uppercase tracking-[0.3em] text-zinc-400 space-x-2 mb-8"
+          >
+            <span className="hover:text-primary-500 cursor-pointer transition-colors">หน้าแรก</span>
+            <ChevronRight size={14} className="text-zinc-300" />
+            <span className="text-primary-500">ติดต่อเรา</span>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-6xl md:text-8xl font-black text-zinc-950 mb-8 tracking-tighter"
+          >
+            GET IN <span className="text-primary-500">TOUCH</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-zinc-500 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed font-semibold"
+          >
+            มีคำถามหรือต้องการปรึกษาเรื่องการเปิดร้าน สามารถติดต่อเราได้ทุกช่องทาง
+            เรายินดีให้คำแนะนำอย่างเต็มที่และรวดเร็วที่สุด
+          </motion.p>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 mb-20 relative z-20">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
           {/* Phone */}
-          <a href="tel:0935022828" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-primary-100 transition-all group">
-            <div className="w-12 h-12 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-600 mx-auto group-hover:bg-primary-600 group-hover:text-white transition-colors">
+          <motion.a
+            variants={itemVariants}
+            href="tel:0935022828"
+            className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
+          >
+            <div className="w-14 h-14 bg-[#22C55E]/10 rounded-2xl flex items-center justify-center text-[#22C55E] mb-5 group-hover:scale-110 transition-all">
               <Phone size={24} />
             </div>
-            <h3 className="font-bold text-gray-900">โทรศัพท์</h3>
-            <p className="text-gray-600 text-sm font-medium">093 502 2828</p>
-          </a>
+            <h3 className="font-bold text-zinc-900 text-lg">เบอร์โทรศัพท์</h3>
+            <p className="text-zinc-500 font-medium mt-1">093 502 2828</p>
+          </motion.a>
 
           {/* Email */}
-          <a href={`mailto:${EMAIL}`} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-blue-100 transition-all group">
-            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto group-hover:bg-blue-600 group-hover:text-white transition-colors">
+          <motion.a
+            variants={itemVariants}
+            href={`mailto:${EMAIL}`}
+            className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
+          >
+            <div className="w-14 h-14 bg-[#EA4335]/10 rounded-2xl flex items-center justify-center text-[#EA4335] mb-5 group-hover:scale-110 transition-all">
               <Mail size={24} />
             </div>
-            <h3 className="font-bold text-gray-900">Email</h3>
-            <p className="text-gray-600 text-sm font-medium break-all">{EMAIL}</p>
-          </a>
-
-          {/* TikTok */}
-          <a href="https://www.tiktok.com/@wonghiran20korat" target="_blank" rel="noopener noreferrer" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-gray-300 transition-all group">
-            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-800 mx-auto group-hover:bg-gray-900 group-hover:text-white transition-colors">
-              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.31 6.31 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.84 1.56V6.82a4.85 4.85 0 01-1.07-.13z"/></svg>
-            </div>
-            <h3 className="font-bold text-gray-900">TikTok</h3>
-            <p className="text-gray-600 text-sm font-medium">@wonghiran20korat</p>
-          </a>
+            <h3 className="font-bold text-zinc-900 text-lg">อีเมล</h3>
+            <p className="text-zinc-500 font-medium mt-1 break-all text-sm">{EMAIL}</p>
+          </motion.a>
 
           {/* Facebook */}
-          <a href={FACEBOOK_LINK} target="_blank" rel="noopener noreferrer" className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4 hover:shadow-md hover:border-blue-100 transition-all group">
-            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto group-hover:bg-blue-600 group-hover:text-white transition-colors">
+          <motion.a
+            variants={itemVariants}
+            href={FACEBOOK_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
+          >
+            <div className="w-14 h-14 bg-[#1877F2]/10 rounded-2xl flex items-center justify-center text-[#1877F2] mb-5 group-hover:scale-110 transition-all">
               <Facebook size={24} />
             </div>
-            <h3 className="font-bold text-gray-900">Facebook</h3>
-            <p className="text-gray-600 text-sm font-medium">วงษ์หิรัญค้าส่ง20โคราช</p>
-          </a>
-        </div>
+            <h3 className="font-bold text-zinc-900 text-lg">Facebook</h3>
+            <p className="text-zinc-500 font-medium mt-1">วงษ์หิรัญค้าส่ง20โคราช</p>
+          </motion.a>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Line OA */}
+          <motion.a
+            variants={itemVariants}
+            href={LINE_OA_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
+          >
+            <div className="w-14 h-14 bg-[#06C755]/10 rounded-2xl flex items-center justify-center text-[#06C755] mb-5 group-hover:scale-110 transition-all">
+              <i className="fa-brands fa-line text-4xl"></i>
+            </div>
+            <h3 className="font-bold text-zinc-900 text-lg">LINE OA</h3>
+            <p className="text-zinc-500 font-medium mt-1">@177eggfh</p>
+          </motion.a>
+        </motion.div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
           {/* Contact Form */}
-          <div className="bg-white p-10 rounded-3xl shadow-sm border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">ส่งข้อความถึงเรา</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label>
-                  <input
-                    required
-                    type="text"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
-                    placeholder="ระบุชื่อของคุณ"
-                  />
+          <div className="lg:col-span-3">
+            <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-zinc-100">
+              <div className="mb-10">
+                <h2 className="text-3xl font-black text-zinc-950 mb-2">ส่งข้อความถึงเรา</h2>
+                <div className="w-20 h-1 bg-primary-500" />
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-zinc-950 uppercase tracking-wider">ชื่อ-นามสกุล</label>
+                    <input
+                      required
+                      type="text"
+                      className="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-medium"
+                      placeholder="ระบุชื่อของคุณ"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-zinc-950 uppercase tracking-wider">เบอร์โทรศัพท์</label>
+                    <input
+                      required
+                      type="tel"
+                      className="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-medium"
+                      placeholder="08x-xxx-xxxx"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label>
-                  <input
-                    required
-                    type="tel"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
-                    placeholder="08x-xxx-xxxx"
-                  />
+                <div className="space-y-3">
+                  <label className="text-sm font-bold text-zinc-950 uppercase tracking-wider">หัวข้อที่ต้องการสอบถาม</label>
+                  <select className="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-medium appearance-none">
+                    <option>สอบถามราคาส่งสินค้า</option>
+                    <option>สนใจแพ็กเกจเปิดร้านใหม่</option>
+                    <option>สอบถามเรื่องการจัดส่ง</option>
+                    <option>อื่นๆ</option>
+                  </select>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">หัวข้อที่ต้องการสอบถาม</label>
-                <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all">
-                  <option>สอบถามราคาส่งสินค้า</option>
-                  <option>สนใจแพ็กเกจเปิดร้านใหม่</option>
-                  <option>สอบถามเรื่องการจัดส่ง</option>
-                  <option>อื่นๆ</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">ข้อความ</label>
-                <textarea
-                  rows={4}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
-                  placeholder="รายละเอียดที่ต้องการสอบถาม..."
-                ></textarea>
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-primary-600 text-white py-4 rounded-xl font-bold hover:bg-primary-700 transition-all flex items-center justify-center space-x-2"
-              >
-                <Send size={20} />
-                <span>ส่งข้อความ</span>
-              </button>
-            </form>
+                <div className="space-y-3">
+                  <label className="text-sm font-bold text-zinc-950 uppercase tracking-wider">ข้อความ</label>
+                  <textarea
+                    rows={4}
+                    className="w-full px-5 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all font-medium"
+                    placeholder="รายละเอียดที่ต้องการสอบถาม..."
+                  ></textarea>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  className="w-full bg-zinc-950 text-white py-5 rounded-2xl font-black text-lg hover:bg-zinc-800 transition-all flex items-center justify-center space-x-3 shadow-lg shadow-zinc-200 border border-zinc-800"
+                >
+                  <Send size={22} className="text-primary-500" />
+                  <span>ส่งข้อมูลและติดต่อผ่าน LINE OA</span>
+                </motion.button>
+              </form>
+            </div>
           </div>
 
           {/* Map & Address */}
-          <div className="space-y-8">
-            <div className="bg-white p-10 rounded-3xl shadow-sm border border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">ที่อยู่โกดัง</h2>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3 text-gray-600">
-                  <MapPin size={20} className="text-primary-600 shrink-0 mt-1" />
-                  <span>476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา 30000</span>
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white p-10 rounded-[2.5rem] shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-zinc-100">
+              <h2 className="text-2xl font-black text-zinc-950 mb-8 border-b border-zinc-100 pb-4">
+                <span className="text-primary-500">ที่อยู่วงษ์หิรัญ</span>
+              </h2>
+              <div className="space-y-8">
+                <div className="flex items-start space-x-4">
+                  <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-white shrink-0">
+                    <MapPin size={22} className="text-primary-500" />
+                  </div>
+                  <span className="text-zinc-600 font-medium pt-1">
+                    476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา 30000
+                  </span>
                 </div>
-                <div className="flex items-start space-x-3 text-gray-600">
-                  <Clock size={20} className="text-primary-600 shrink-0 mt-1" />
+                <div className="flex items-start space-x-4">
+                  <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-white shrink-0">
+                    <Clock size={22} className="text-primary-500" />
+                  </div>
                   <div>
-                    <p className="font-bold text-gray-900">เวลาทำการ:</p>
-                    <p>เปิดทุกวัน 08:00 – 17:30 น.</p>
-                    <p className="text-sm text-gray-500 mt-1">หยุดเฉพาะวันสงกรานต์และวันปีใหม่</p>
+                    <p className="font-black text-zinc-950 uppercase tracking-wider text-sm mb-1">เวลา เปิด-ปิดโกดัง</p>
+                    <p className="text-zinc-500">เปิดทุกวัน 08:00 – 17:30 น.</p>
+                    <p className="text-xs text-zinc-400 mt-1 italic">หยุดเฉพาะวันสงกรานต์และวันปีใหม่</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* React Leaflet Map with Google Maps Layer */}
-            <div className="h-[350px] rounded-3xl overflow-hidden shadow-sm border border-gray-100 relative z-0">
+            <div className="h-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl relative z-0">
               <MapContainer
                 center={STORE_LOCATION}
                 zoom={18}
@@ -168,9 +247,9 @@ export default function Contact() {
                 />
                 <Marker position={STORE_LOCATION}>
                   <Popup>
-                    <div className="text-center">
-                      <p className="font-bold">วงษ์หิรัญค้าส่ง</p>
-                      <p className="text-xs">476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา</p>
+                    <div className="text-center p-1">
+                      <p className="font-black text-zinc-950">วงษ์หิรัญค้าส่ง</p>
+                      <p className="text-[10px] text-zinc-500">Warehouse</p>
                     </div>
                   </Popup>
                 </Marker>

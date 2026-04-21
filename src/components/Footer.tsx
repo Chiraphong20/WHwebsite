@@ -11,11 +11,11 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-5">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="bg-red-600 p-1.5 rounded-lg shadow-md">
+              <div className="bg-primary-500 p-1.5 rounded-lg shadow-md">
                 <ShoppingBag className="text-white w-6 h-6" />
               </div>
               <span className="font-bold text-xl tracking-tight text-white">
-                วงษ์หิรัญ<span className="text-red-500">ค้าส่ง</span>
+                วงษ์หิรัญ<span className="text-primary-500">ค้าส่ง</span>
               </span>
             </Link>
             <p className="text-sm leading-relaxed">
@@ -62,11 +62,11 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">เมนูแนะนำ</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/products" className="hover:text-red-400 transition-colors">แคตตาล็อกสินค้า</Link></li>
-              <li><Link to="/packages" className="hover:text-red-400 transition-colors">แพ็กเกจเปิดร้าน</Link></li>
-              <li><Link to="/how-to-order" className="hover:text-red-400 transition-colors">วิธีการสั่งซื้อ</Link></li>
-              <li><Link to="/about" className="hover:text-red-400 transition-colors">เกี่ยวกับเรา</Link></li>
-              <li><Link to="/contact" className="hover:text-red-400 transition-colors">ติดต่อเรา</Link></li>
+              <li><Link to="/products" className="hover:text-primary-400 transition-colors">แคตตาล็อกสินค้า</Link></li>
+              <li><Link to="/packages" className="hover:text-primary-400 transition-colors">แพ็กเกจเปิดร้าน</Link></li>
+              <li><Link to="/how-to-order" className="hover:text-primary-400 transition-colors">วิธีการสั่งซื้อ</Link></li>
+              <li><Link to="/about" className="hover:text-primary-400 transition-colors">เกี่ยวกับเรา</Link></li>
+              <li><Link to="/contact" className="hover:text-primary-400 transition-colors">ติดต่อเรา</Link></li>
             </ul>
           </div>
 
@@ -74,11 +74,11 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">หมวดหมู่สินค้า</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/products?cat=ของเล่นเด็ก" className="hover:text-red-400 transition-colors">ของเล่นเด็ก</Link></li>
-              <li><Link to="/products?cat=เครื่องครัว" className="hover:text-red-400 transition-colors">เครื่องครัว</Link></li>
-              <li><Link to="/products?cat=เครื่องมือช่าง" className="hover:text-red-400 transition-colors">เครื่องมือช่าง</Link></li>
-              <li><Link to="/products?cat=ของใช้ในบ้าน" className="hover:text-red-400 transition-colors">ของใช้ในบ้าน</Link></li>
-              <li><Link to="/products?cat=พลาสติก" className="hover:text-red-400 transition-colors">พลาสติก</Link></li>
+              <li><Link to="/products?cat=ของเล่นเด็ก" className="hover:text-primary-400 transition-colors">ของเล่นเด็ก</Link></li>
+              <li><Link to="/products?cat=เครื่องครัว" className="hover:text-primary-400 transition-colors">เครื่องครัว</Link></li>
+              <li><Link to="/products?cat=เครื่องมือช่าง" className="hover:text-primary-400 transition-colors">เครื่องมือช่าง</Link></li>
+              <li><Link to="/products?cat=ของใช้ในบ้าน" className="hover:text-primary-400 transition-colors">ของใช้ในบ้าน</Link></li>
+              <li><Link to="/products?cat=พลาสติก" className="hover:text-primary-400 transition-colors">พลาสติก</Link></li>
             </ul>
           </div>
 
@@ -90,11 +90,11 @@ export default function Footer() {
               <span>476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา 30000</span>
             </div>
             <div className="flex items-center space-x-3 text-sm">
-              <Phone size={17} className="text-red-500 shrink-0" />
+              <Phone size={17} className="text-primary-500 shrink-0" />
               <a href="tel:0935022828" className="hover:text-white transition-colors">093 502 2828</a>
             </div>
             <div className="flex items-center space-x-3 text-sm">
-              <Mail size={17} className="text-red-500 shrink-0" />
+              <Mail size={17} className="text-primary-500 shrink-0" />
               <a href="mailto:wonghirangroup@gmail.com" className="hover:text-white transition-colors break-all">wonghirangroup@gmail.com</a>
             </div>
             <div className="flex items-start space-x-3 text-sm">

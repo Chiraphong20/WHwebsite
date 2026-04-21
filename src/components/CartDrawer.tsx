@@ -186,7 +186,7 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
                         <p className="text-primary-600 font-extrabold text-sm mt-1">฿{Number(item.product.wholesalePrice).toLocaleString()}</p>
                       </div>
                       <div className="flex flex-col items-end space-y-2">
-                        <button onClick={() => onRemove(item.product.id)} className="text-gray-300 hover:text-red-500 transition-colors">
+                        <button onClick={() => onRemove(item.product.id)} className="text-gray-300 hover:text-primary-500 transition-colors">
                           <Trash2 size={15} />
                         </button>
                         <div className="flex items-center space-x-2">

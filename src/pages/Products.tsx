@@ -189,7 +189,7 @@ export default function Products() {
             >
               <ShoppingCart size={22} className="text-primary-500" />
               {cartItems.reduce((acc, item) => acc + item.qty, 0) > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
+                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
                   {cartItems.reduce((acc, item) => acc + item.qty, 0)}
                 </span>
               )}
@@ -377,7 +377,7 @@ export default function Products() {
           title="เปิดตะกร้าสินค้า"
         >
           <ShoppingCart size={28} />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+          <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
             {cartItems.reduce((acc, item) => acc + item.qty, 0)}
           </span>
         </motion.button>

@@ -34,7 +34,7 @@ export default function HowToOrder() {
           <div className="flex items-center justify-center text-sm text-gray-500 space-x-2 mb-4">
             <span>หน้าแรก</span>
             <ChevronRight size={14} />
-            <span className="text-red-600 font-medium">วิธีการสั่งซื้อ</span>
+            <span className="text-primary-600 font-medium">วิธีการสั่งซื้อ</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">ขั้นตอนการสั่งซื้อและเงื่อนไข</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -52,10 +52,10 @@ export default function HowToOrder() {
               transition={{ delay: idx * 0.1 }}
               className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative"
             >
-              <div className="absolute -top-4 -left-4 w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+              <div className="absolute -top-4 -left-4 w-10 h-10 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
                 {idx + 1}
               </div>
-              <div className="text-red-600 mb-6">{step.icon}</div>
+              <div className="text-primary-600 mb-6">{step.icon}</div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
               <p className="text-gray-600 text-sm leading-relaxed">{step.desc}</p>
             </motion.div>
@@ -78,7 +78,7 @@ export default function HowToOrder() {
                 'รับประกันสินค้าเสียหายจากการขนส่ง (ต้องมีวิดีโอตอนแกะกล่อง)'
               ].map((term, i) => (
                 <li key={i} className="flex items-start space-x-3 text-gray-700">
-                  <div className="w-1.5 h-1.5 bg-red-600 rounded-full mt-2 shrink-0"></div>
+                  <div className="w-1.5 h-1.5 bg-primary-600 rounded-full mt-2 shrink-0"></div>
                   <span>{term}</span>
                 </li>
               ))}
