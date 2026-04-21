@@ -5,20 +5,22 @@ import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
 
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
 const CLOUD_NAME = "dffqpiizc";
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/`;
 
-const categories = [
-  "ของเล่นเด็ก", "เครื่องเขียน", "กีฬา", "เครื่องครัว",
-  "กิ๊ฟช็อป", "เครื่องบูชา", "อุปกรณ์ไอที", "ของใช้ในบ้าน",
-  "เบ็ดเตล็ด", "เครื่องมือช่าง", "ความงาม", "อุปกรณ์สัตว์เลี้ยง",
-  "ของใช้ในรถ", "พลาสติก", "อุปกรณ์ไฟฟ้า", "เครื่องใช้ไฟฟ้า", "เซรามิค"
-  , "อุปกรณ์แคมปิ้ง", "อุปกรณ์ทำความสะอาด"
+const FALLBACK_CATEGORIES = [
+  "สินค้าขายดี", "สินค้าโปรโมชั่น", "ของเล่นเด็ก", "อุปกรณ์กีฬา",
+  "อุปกรณ์ทำความสะอาด", "เครื่องครัว", "อุปกรณ์แคมปิ้ง", "พลาสติก",
+  "อุปกรณ์ไฟฟ้า", "เครื่องใช้ไฟฟ้า", "อุปกรณ์สัตว์เลี้ยง", "เครื่องมือช่าง",
+  "สินค้าเทศกาล", "เซรามิก", "อุปกรณ์ขายสินค้า", "ของใช้ในบ้าน",
+  "กิ๊ฟช็อป", "เครื่องบูชา", "เครื่องเขียน", "อุปกรณ์ไอที",
+  "เบ็ดเตล็ด", "ของชำร่วย", "เครื่องแก้ว", "อุปกรณ์ทำสวน"
 ];
 
 export default function Home() {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(FALLBACK_CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -51,7 +53,24 @@ export default function Home() {
         setIsLoading(false);
       }
     };
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/categories`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setCategories(data.map((c: any) => c.name));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+
     fetchBestSellers();
+    fetchCategories();
   }, []);
 
   return (

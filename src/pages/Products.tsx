@@ -8,7 +8,7 @@ import CartDrawer from '../components/CartDrawer';
 import OrderHistoryModal from '../components/OrderHistoryModal';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://wh-shop20.vercel.app';
+const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
 const CLOUD_NAME = "dffqpiizc";
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/`;
 
@@ -25,6 +25,7 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(['ทั้งหมด', ...CATEGORIES]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -58,7 +59,24 @@ export default function Products() {
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/categories`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setCategories(['ทั้งหมด', ...data.map((c: any) => c.name)]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const showToast = (message: string) => {
@@ -169,16 +187,7 @@ export default function Products() {
               </div>
 
               <div className="space-y-1.5 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                <button
-                  onClick={() => setSelectedCategory('ทั้งหมด')}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${selectedCategory === 'ทั้งหมด'
-                      ? 'bg-primary-50 text-primary-600 shadow-sm border border-primary-100'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-dark'
-                    }`}
-                >
-                  ทั้งหมด
-                </button>
-                {CATEGORIES.map(cat => (
+                {categories.map(cat => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}

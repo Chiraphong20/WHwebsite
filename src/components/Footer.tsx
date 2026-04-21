@@ -76,9 +76,9 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li><Link to="/products?cat=ของเล่นเด็ก" className="hover:text-red-400 transition-colors">ของเล่นเด็ก</Link></li>
               <li><Link to="/products?cat=เครื่องครัว" className="hover:text-red-400 transition-colors">เครื่องครัว</Link></li>
-              <li><Link to="/products?cat=กีฬากลางแจ้ง" className="hover:text-red-400 transition-colors">กีฬากลางแจ้ง</Link></li>
               <li><Link to="/products?cat=เครื่องมือช่าง" className="hover:text-red-400 transition-colors">เครื่องมือช่าง</Link></li>
-              <li><Link to="/products?cat=ความงาม" className="hover:text-red-400 transition-colors">ความงาม</Link></li>
+              <li><Link to="/products?cat=ของใช้ในบ้าน" className="hover:text-red-400 transition-colors">ของใช้ในบ้าน</Link></li>
+              <li><Link to="/products?cat=พลาสติก" className="hover:text-red-400 transition-colors">พลาสติก</Link></li>
             </ul>
           </div>
 
