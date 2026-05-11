@@ -9,7 +9,7 @@ import OrderHistoryModal from '../components/OrderHistoryModal';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
+const API_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com');
 const CLOUD_NAME = "dffqpiizc";
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/`;
 
