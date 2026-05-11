@@ -6,6 +6,7 @@ import { CATEGORIES, Product } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import OrderHistoryModal from '../components/OrderHistoryModal';
+import ProductDetailModal from '../components/ProductDetailModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
@@ -21,6 +22,7 @@ export default function Products() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrderHistoryOpen, setIsOrderHistoryOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
   const [searchQuery, setSearchQuery] = useState('');
@@ -209,18 +211,26 @@ export default function Products() {
               </div>
 
               <div className="space-y-1.5 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${selectedCategory === cat
-                        ? 'bg-primary-50 text-primary-600 shadow-sm border border-primary-100'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-dark'
-                      }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+                {categories.map(cat => {
+                  const count = cat === 'ทั้งหมด'
+                    ? products.length
+                    : products.filter(p => p.category === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-between ${selectedCategory === cat
+                          ? 'bg-primary-50 text-primary-600 shadow-sm border border-primary-100'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-dark'
+                        }`}
+                    >
+                      <span>{cat}</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${selectedCategory === cat ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-400'}`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </aside>
@@ -272,6 +282,7 @@ export default function Products() {
                         onAddToCart={handleAddToCart}
                         onUpdateQty={(p, delta) => handleQtyChange(p.id, delta)}
                         onSetQty={(p, qty) => handleSetQty(p.id, qty)}
+                        onCardClick={setSelectedProduct}
                       />
                     </motion.div>
                   ))}
@@ -414,6 +425,16 @@ export default function Products() {
       <OrderHistoryModal
         isOpen={isOrderHistoryOpen}
         onClose={() => setIsOrderHistoryOpen(false)}
+      />
+
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        cartQty={cartItems.find(item => item.product.id === selectedProduct?.id)?.qty}
+        onAddToCart={handleAddToCart}
+        onUpdateQty={(p, delta) => handleQtyChange(p.id, delta)}
+        onSetQty={(p, qty) => handleSetQty(p.id, qty)}
       />
     </div>
   );

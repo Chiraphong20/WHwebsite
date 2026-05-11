@@ -8,10 +8,14 @@ interface ProductCardProps {
   onAddToCart?: (product: Product) => void;
   onUpdateQty?: (product: Product, delta: number) => void;
   onSetQty?: (product: Product, qty: number) => void;
+  onCardClick?: (product: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart, onUpdateQty, onSetQty }) => (
-  <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
+const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart, onUpdateQty, onSetQty, onCardClick }) => (
+  <div
+    className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer"
+    onClick={() => onCardClick && onCardClick(product)}
+  >
     <div className="relative aspect-square overflow-hidden bg-gray-50">
       <img 
         src={product.image} 
