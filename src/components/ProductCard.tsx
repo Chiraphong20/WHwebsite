@@ -17,10 +17,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
     onClick={() => onCardClick && onCardClick(product)}
   >
     <div className="relative aspect-square overflow-hidden bg-gray-50">
-      <img 
-        src={product.image} 
-        alt={product.name} 
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+      <img
+        src={product.image}
+        alt={product.name}
+        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         loading="lazy"
       />
       {product.isBestSeller && (
@@ -29,37 +29,64 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
         </span>
       )}
     </div>
-    
-    <div className="p-6 flex-1 flex flex-col">
-      <p className="text-xs text-primary-600 font-bold mb-2 uppercase tracking-wide bg-primary-50 inline-block px-2 py-1 rounded w-fit">{product.category}</p>
-      <h3 className="font-bold text-dark text-lg line-clamp-2 h-14 group-hover:text-primary-600 transition-colors mb-4">{product.name}</h3>
-      
-      <div className="mt-auto pt-4 border-t border-gray-50">
-        <div className="flex flex-col gap-1 mb-5">
-          <div className="flex justify-between items-end">
-            <div className="flex flex-col">
-              <span className="text-gray-400 text-xs font-medium mb-1">ราคาปลีก</span>
-              <span className="text-gray-500 text-sm font-semibold line-through">฿{Number(product.retailPrice).toLocaleString()}</span>
+
+    <div className="p-4 flex-1 flex flex-col">
+      <p className="text-xs text-primary-600 font-bold mb-1.5 uppercase tracking-wide bg-primary-50 inline-block px-2 py-0.5 rounded w-fit">{product.category}</p>
+      <h3 className="font-bold text-dark text-base line-clamp-2 h-12 group-hover:text-primary-600 transition-colors mb-3">{product.name}</h3>
+
+      <div className="mt-auto pt-3 border-t border-gray-50">
+        {/* Bulk price tier */}
+        {!!product.bulkQty && product.bulkQty > 0 && !!product.bulkPrice && product.bulkPrice > 0 && (
+          <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2 mb-2">
+            <div>
+              <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded mb-1 block w-fit">ราคาส่ง</span>
+              <div className="flex items-baseline gap-1">
+                <span className="font-extrabold text-green-700 text-lg leading-none">฿{Number(product.bulkPrice).toLocaleString()}</span>
+                <span className="text-[10px] text-green-600">{product.bulkQty} {product.unit}ขึ้นไป</span>
+              </div>
             </div>
-            <div className="text-right">
-              <span className="text-xs text-primary-600 font-bold mb-1 block">ราคาส่งเริ่มต้น</span>
-              <span className="font-extrabold text-3xl text-primary-600">฿{Number(product.wholesalePrice).toLocaleString()}</span>
-            </div>
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (onAddToCart) onAddToCart(product); }}
+              className="text-[11px] font-bold text-green-700 bg-green-200 hover:bg-green-300 px-2.5 py-1.5 rounded-lg whitespace-nowrap active:scale-95 transition-all"
+            >
+              + {product.bulkQty} {product.unit}
+            </button>
           </div>
-          <div className="text-[10px] text-gray-600 bg-orange-50 px-2 py-1 rounded w-fit border border-primary-200/50 font-medium self-end mt-2 tracking-wide">
-            ซื้อขั้นต่ำ {product.minWholesaleQty} {product.unit} ถึ้งได้ราคานี้
+        )}
+
+        {/* Main price */}
+        <div className="flex items-end justify-between mb-1.5">
+          <div className="flex items-baseline gap-1">
+            <span className="font-extrabold text-2xl text-primary-600 leading-none">฿{Number(product.wholesalePrice).toLocaleString()}</span>
+            <span className="text-xs text-gray-400">/ {product.unit}</span>
           </div>
+          {Number(product.retailPrice) !== Number(product.wholesalePrice) && (
+            <span className="text-gray-400 text-xs line-through">฿{Number(product.retailPrice).toLocaleString()}</span>
+          )}
         </div>
-        
+
+        {/* Unit qty + stock */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          {product.unitQty && product.unitQty > 0 ? (
+            <span className="text-[11px] text-gray-500 font-medium">{product.unitQty} ชิ้น / {product.unit}</span>
+          ) : (
+            <span className="text-[11px] text-gray-400">ซื้อขั้นต่ำ {product.minWholesaleQty} {product.unit}</span>
+          )}
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
+            {product.stock > 0 ? `เหลือ ${product.stock}` : 'หมด'}
+          </span>
+        </div>
+
+        {/* Cart controls */}
         {cartQty !== undefined && cartQty > 0 ? (
-          <div className="w-full mt-3 h-[46px] flex items-center justify-between bg-primary-50 rounded-2xl border border-primary-200 p-1 shadow-inner">
-            <button 
+          <div className="w-full h-[46px] flex items-center justify-between bg-primary-50 rounded-2xl border border-primary-200 p-1 shadow-inner">
+            <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (onUpdateQty) onUpdateQty(product, -1); }}
               className="w-9 h-9 flex-shrink-0 rounded-xl bg-white text-primary-600 font-bold shadow-sm hover:bg-primary-100 flex items-center justify-center active:scale-95 transition-all"
             >
               -
             </button>
-            <input 
+            <input
               type="number"
               value={cartQty || ''}
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -78,7 +105,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
               }}
               className="flex-1 w-full min-w-0 text-center bg-transparent font-extrabold text-dark focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <button 
+            <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (onUpdateQty) onUpdateQty(product, 1); }}
               className="w-9 h-9 flex-shrink-0 rounded-xl bg-primary-500 text-white font-bold shadow-sm hover:bg-primary-600 flex items-center justify-center active:scale-95 transition-all"
             >
@@ -87,13 +114,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
           </div>
         ) : (
           onAddToCart && (
-            <button 
+            <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onAddToCart(product);
               }}
-              className="w-full mt-3 py-3.5 bg-primary-500 text-white text-sm rounded-2xl hover:bg-primary-600 active:scale-95 transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20"
+              className="w-full py-3 bg-primary-500 text-white text-sm rounded-2xl hover:bg-primary-600 active:scale-95 transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20"
             >
               <ShoppingCart size={18} />
               เพิ่มลงตะกร้า
@@ -106,4 +133,3 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
 );
 
 export default ProductCard;
-

@@ -8,10 +8,13 @@ export interface Product {
   minWholesaleQty: number;
   stock: number;
   unit: string;
+  unitQty?: number;   // จำนวนชิ้นต่อหน่วย เช่น 1 แพ็ค = 6 ชิ้น
+  bulkQty?: number;   // จำนวนขั้นต่ำสำหรับราคา bulk
+  bulkPrice?: number; // ราคา bulk
   image: string;
   images: string[];
   description: string;
-  isBestSeller?: boolean; // added for Home.tsx compatibility
+  isBestSeller?: boolean;
 }
 
 export interface Package {
