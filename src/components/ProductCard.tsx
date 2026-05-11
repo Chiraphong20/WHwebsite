@@ -58,7 +58,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
           {Number(product.retailPrice) > 0 && Number(product.retailPrice) !== Number(product.wholesalePrice) && (
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ราคาปลีก</span>
-              <span className="text-sm text-gray-400 line-through font-medium">฿{Number(product.retailPrice).toLocaleString()} / {product.unit}</span>
+              <span className="text-sm text-gray-400 font-medium">฿{Number(product.retailPrice).toLocaleString()} / {product.unit}</span>
             </div>
           )}
           <div className="flex items-center justify-between bg-primary-50 rounded-2xl px-3 py-2 border border-primary-100">
