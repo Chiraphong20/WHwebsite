@@ -1,6 +1,5 @@
-import React from 'react';
-import { Product } from '../data/mockData';
 import { ShoppingCart } from 'lucide-react';
+import { Product } from '../data/mockData';
 
 interface ProductCardProps {
   product: Product;
@@ -54,15 +53,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
           </div>
         )}
 
-        {/* Main price */}
-        <div className="flex items-end justify-between mb-1.5">
-          <div className="flex items-baseline gap-1">
-            <span className="font-extrabold text-2xl text-primary-600 leading-none">฿{Number(product.wholesalePrice).toLocaleString()}</span>
-            <span className="text-xs text-gray-400">/ {product.unit}</span>
-          </div>
-          {Number(product.retailPrice) !== Number(product.wholesalePrice) && (
-            <span className="text-gray-400 text-xs line-through">฿{Number(product.retailPrice).toLocaleString()}</span>
+        {/* Dual price */}
+        <div className="space-y-1.5 mb-3">
+          {Number(product.retailPrice) > 0 && Number(product.retailPrice) !== Number(product.wholesalePrice) && (
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ราคาปลีก</span>
+              <span className="text-sm text-gray-400 line-through font-medium">฿{Number(product.retailPrice).toLocaleString()} / {product.unit}</span>
+            </div>
           )}
+          <div className="flex items-center justify-between bg-primary-50 rounded-2xl px-3 py-2 border border-primary-100">
+            <div>
+              <span className="text-[10px] font-extrabold text-primary-600 block">ราคาส่ง</span>
+              <span className="text-[10px] text-primary-400">ซื้อ {product.minWholesaleQty}+ {product.unit}</span>
+            </div>
+            <div className="flex items-baseline gap-0.5">
+              <span className="font-extrabold text-xl text-primary-600">฿{Number(product.wholesalePrice).toLocaleString()}</span>
+              <span className="text-[10px] text-primary-400"> /{product.unit}</span>
+            </div>
+          </div>
         </div>
 
         {/* Unit qty + stock */}
@@ -70,7 +78,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
           {product.unitQty && product.unitQty > 0 ? (
             <span className="text-[11px] text-gray-500 font-medium">{product.unitQty} ชิ้น / {product.unit}</span>
           ) : (
-            <span className="text-[11px] text-gray-400">ซื้อขั้นต่ำ {product.minWholesaleQty} {product.unit}</span>
+            <span />
           )}
           <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
             {product.stock > 0 ? `เหลือ ${product.stock}` : 'หมด'}
