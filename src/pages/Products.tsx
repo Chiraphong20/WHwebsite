@@ -51,7 +51,7 @@ export default function Products() {
           const data = await response.json();
           const formattedData = data.map((item: any) => {
             let imageUrl = item.image;
-            if (item.imageId) {
+            if (!item.image && item.imageId) {
               imageUrl = `${CLOUDINARY_BASE_URL}${item.imageId}.jpg`;
             } else if (!item.image) {
               imageUrl = 'https://placehold.co/400x400?text=No+Image';
