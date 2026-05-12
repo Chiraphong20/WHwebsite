@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Loader2, PackageSearch, MessageCircle, ShoppingCart } from 'lucide-react';
+import { Search, Filter, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Loader2, PackageSearch, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CATEGORIES, Product } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
@@ -107,7 +107,7 @@ export default function Products() {
       if (existing) {
         return prev.map(item => item.product.id === product.id ? { ...item, qty: item.qty + 1 } : item);
       }
-      return [...prev, { product, qty: product.minWholesaleQty || 1 }];
+      return [...prev, { product, qty: 1 }];
     });
     showToast('เพิ่มลงตะกร้าแล้ว');
   };

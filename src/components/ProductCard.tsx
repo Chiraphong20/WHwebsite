@@ -22,6 +22,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, cartQty, onAddToCart
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         loading="lazy"
       />
+      {/* Cover baked-in price/code banners in product catalog images */}
+      <div className="absolute top-0 left-0 right-0 h-[14%] bg-gradient-to-b from-white to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-[16%] bg-gradient-to-t from-white to-transparent pointer-events-none" />
       {product.isBestSeller && (
         <span className="absolute top-4 left-4 bg-accent/90 backdrop-blur-sm text-dark text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
           ขายดี 🔥
