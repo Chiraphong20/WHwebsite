@@ -37,7 +37,13 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
     }
   }, [user]);
 
-  const total = items.reduce((sum, i) => sum + Number(i.product.wholesalePrice) * i.qty, 0);
+  const getEffectivePrice = (product: Product, qty: number): number => {
+    if (product.bulkQty && product.bulkPrice && qty >= product.bulkQty) return Number(product.bulkPrice);
+    if (qty >= (product.minWholesaleQty || 1)) return Number(product.wholesalePrice);
+    return Number(product.retailPrice) > 0 ? Number(product.retailPrice) : Number(product.wholesalePrice);
+  };
+
+  const total = items.reduce((sum, i) => sum + getEffectivePrice(i.product, i.qty) * i.qty, 0);
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
 
@@ -73,9 +79,9 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
           productId: i.product.id,
           name: i.product.name,
           quantity: i.qty,
-          price: i.product.wholesalePrice,
+          price: getEffectivePrice(i.product, i.qty),
           productName: i.product.name,
-          productPrice: i.product.wholesalePrice
+          productPrice: getEffectivePrice(i.product, i.qty)
         })),
         timestamp: new Date().toISOString(),
         customerLineUserId: user?.userId,
@@ -183,7 +189,14 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
                       />
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-dark text-sm line-clamp-2">{item.product.name}</p>
-                        <p className="text-primary-600 font-extrabold text-sm mt-1">฿{Number(item.product.wholesalePrice).toLocaleString()}</p>
+                        <p className="text-primary-600 font-extrabold text-sm mt-1">
+                          ฿{getEffectivePrice(item.product, item.qty).toLocaleString()} / {item.product.unit}
+                        </p>
+                        {item.product.minWholesaleQty > 1 && item.qty < item.product.minWholesaleQty && (
+                          <p className="text-[10px] text-orange-500 font-bold mt-0.5">
+                            อีก {item.product.minWholesaleQty - item.qty} {item.product.unit} → ราคาส่ง ฿{Number(item.product.wholesalePrice).toLocaleString()}
+                          </p>
+                        )}
                       </div>
                       <div className="flex flex-col items-end space-y-2">
                         <button onClick={() => onRemove(item.product.id)} className="text-gray-300 hover:text-primary-500 transition-colors">
