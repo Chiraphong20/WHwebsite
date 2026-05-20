@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Check, X, Search, ImageIcon, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Product } from '../data/mockData';
 
-const API_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com');
+const API_URL = '';
 const CLOUD_NAME = 'dffqpiizc';
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/`;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
@@ -43,7 +43,8 @@ export default function Admin() {
       setLoading(true);
       try {
         const res = await fetch(`${API_URL}/api/products`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+          cache: 'no-store'
         });
         if (res.ok) {
           const data = await res.json();

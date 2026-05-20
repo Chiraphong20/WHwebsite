@@ -37,7 +37,7 @@ export default function OrderHistoryModal({ isOpen, onClose }: OrderHistoryModal
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
+  const API_URL = '';
 
   useEffect(() => {
     if (isOpen && isLoggedIn && user?.userId) {
@@ -50,9 +50,8 @@ export default function OrderHistoryModal({ isOpen, onClose }: OrderHistoryModal
     setError('');
     try {
       const response = await fetch(`${API_URL}/api/orders`, {
-        headers: {
-          'ngrok-skip-browser-warning': 'true'
-        }
+        headers: { 'ngrok-skip-browser-warning': 'true' },
+        cache: 'no-store'
       });
       if (!response.ok) {
         throw new Error('ไม่สามารถดึงข้อมูลออเดอร์ได้');

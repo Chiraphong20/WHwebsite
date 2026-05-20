@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
 
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://whshop20.onrender.com';
+const API_URL = '';
 const CLOUD_NAME = "dffqpiizc";
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/`;
 
@@ -27,7 +27,8 @@ export default function Home() {
     const fetchBestSellers = async () => {
       try {
         const response = await fetch(`${API_URL}/api/products`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+          cache: 'no-store'
         });
         if (response.ok) {
           const data = await response.json();
@@ -56,7 +57,8 @@ export default function Home() {
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${API_URL}/api/categories`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+          cache: 'no-store'
         });
         if (response.ok) {
           const data = await response.json();
