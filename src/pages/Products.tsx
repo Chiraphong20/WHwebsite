@@ -141,10 +141,14 @@ export default function Products() {
     }));
   };
 
+  const twentyDaysAgo = new Date();
+  twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
+
   const filteredProducts = products.filter(p => {
-    const matchesCategory = selectedCategory === 'ทั้งหมด' || p.category?.split('/').includes(selectedCategory);
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    if (selectedCategory === 'ทั้งหมด') return matchesSearch;
+    if (selectedCategory === 'สินค้าใหม่') return !!p.createdAt && new Date(p.createdAt) >= twentyDaysAgo && matchesSearch;
+    return p.category?.split('/').includes(selectedCategory) && matchesSearch;
   });
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -214,7 +218,9 @@ export default function Products() {
                 {categories.map(cat => {
                   const count = cat === 'ทั้งหมด'
                     ? products.length
-                    : products.filter(p => p.category === cat).length;
+                    : cat === 'สินค้าใหม่'
+                    ? products.filter(p => !!p.createdAt && new Date(p.createdAt) >= twentyDaysAgo).length
+                    : products.filter(p => p.category?.split('/').includes(cat)).length;
                   return (
                     <button
                       key={cat}

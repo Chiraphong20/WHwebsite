@@ -15,6 +15,7 @@ export interface Product {
   images: string[];
   description: string;
   isBestSeller?: boolean;
+  createdAt?: string;
 }
 
 export interface Package {
