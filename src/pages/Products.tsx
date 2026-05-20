@@ -142,7 +142,7 @@ export default function Products() {
   };
 
   const filteredProducts = products.filter(p => {
-    const matchesCategory = selectedCategory === 'ทั้งหมด' || p.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'ทั้งหมด' || p.category?.split('/').includes(selectedCategory);
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
