@@ -19,34 +19,43 @@ const FALLBACK_CATEGORIES = [
 ];
 
 export default function Home() {
+  const [trending, setTrending] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(FALLBACK_CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
 
+  const formatProduct = (item: any): Product => {
+    let imageUrl = item.image;
+    if (item.imageId) {
+      imageUrl = `${CLOUDINARY_BASE_URL}${item.imageId}.jpg`;
+    } else if (!item.image) {
+      imageUrl = 'https://placehold.co/400x400?text=No+Image';
+    }
+    return {
+      ...item,
+      images: typeof item.images === 'string' ? JSON.parse(item.images) : (item.images || []),
+      image: imageUrl,
+    };
+  };
+
   useEffect(() => {
-    const fetchBestSellers = async () => {
+    const fetchBestSellersData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/products`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' },
-          cache: 'no-store'
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const formattedData = data.slice(0, 4).map((item: any) => {
-            let imageUrl = item.image;
-            if (item.imageId) {
-              imageUrl = `${CLOUDINARY_BASE_URL}${item.imageId}.jpg`;
-            } else if (!item.image) {
-              imageUrl = 'https://placehold.co/400x400?text=No+Image';
-            }
-            return {
-              ...item,
-              images: typeof item.images === 'string' ? JSON.parse(item.images) : (item.images || []),
-              image: imageUrl,
-              isBestSeller: true
-            };
-          });
-          setBestSellers(formattedData);
+        const [resTrend, resBest] = await Promise.all([
+          fetch(`${API_URL}/api/products/trending?days=7&limit=4`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }, cache: 'no-store'
+          }),
+          fetch(`${API_URL}/api/products/best-sellers?limit=4`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }, cache: 'no-store'
+          }),
+        ]);
+        if (resTrend.ok) {
+          const data = await resTrend.json();
+          setTrending(data.map(formatProduct));
+        }
+        if (resBest.ok) {
+          const data = await resBest.json();
+          setBestSellers(data.map(formatProduct));
         }
       } catch (error) {
         console.error('Failed to fetch best sellers:', error);
@@ -54,6 +63,7 @@ export default function Home() {
         setIsLoading(false);
       }
     };
+
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${API_URL}/api/categories`, {
@@ -71,7 +81,7 @@ export default function Home() {
       }
     };
 
-    fetchBestSellers();
+    fetchBestSellersData();
     fetchCategories();
   }, []);
 
@@ -151,16 +161,90 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Best Sellers Section */}
-      <section className="py-24 bg-white">
+      {/* ===== Trending Section ===== */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-gray-100 pb-6 gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-gray-100 pb-6 gap-4">
             <div>
               <div className="flex items-center space-x-2 mb-2">
-                <Star className="text-accent fill-accent" size={24} />
-                <h2 className="text-3xl md:text-4xl font-bold text-dark">สินค้าขายดีแนะนำ</h2>
+                <TrendingUp className="text-orange-500" size={26} />
+                <h2 className="text-3xl md:text-4xl font-bold text-dark">สินค้ามาแรง 🔥</h2>
               </div>
-              <p className="text-lg text-gray-600">ไอเทมเด็ดที่ร้าน 20 บาททุกร้านต้องมีติดร้านไว้ ขายออกไว กำไรดี</p>
+              <p className="text-lg text-gray-600">สินค้าที่ลูกค้าสั่งซื้อมากที่สุดใน 7 วันล่าสุด</p>
+            </div>
+            <Link to="/products" className="group flex items-center space-x-2 text-orange-600 font-semibold hover:text-orange-700 bg-orange-50 px-5 py-2.5 rounded-full transition-colors">
+              <span>ดูสินค้าทั้งหมด</span>
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {isLoading ? (
+            <div className="w-full flex flex-col items-center justify-center py-16 space-y-4">
+              <Loader2 className="animate-spin text-orange-500" size={44} />
+              <p className="text-gray-500 font-medium">กำลังโหลด...</p>
+            </div>
+          ) : trending.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <TrendingUp size={48} className="mx-auto mb-3 opacity-30" />
+              <p className="font-medium">ยังไม่มีข้อมูลสินค้ามาแรงในขณะนี้</p>
+              <p className="text-sm mt-1">ระบบจะอัปเดตทันทีเมื่อมีการสั่งซื้อสินค้า</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {trending.map((product, index) => (
+                <Link to="/products" key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-orange-100 hover:-translate-y-2">
+                  <div className="aspect-square relative overflow-hidden bg-gray-50">
+                    <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" loading="lazy" />
+                    {index < 3 && (
+                      <div className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center text-sm font-extrabold text-white shadow-lg ${
+                        index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-400' : 'bg-amber-600'
+                      }`}>
+                        {index + 1}
+                      </div>
+                    )}
+                    <div className="absolute top-3 right-3 bg-orange-500/90 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                      มาแรง 🔥
+                    </div>
+                    <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="bg-white text-orange-600 px-6 py-2.5 rounded-full font-bold flex items-center space-x-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                        <ShoppingCart size={18} />
+                        <span>เลือกดูสินค้า</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col">
+                    <p className="text-xs text-orange-600 font-bold mb-1.5 bg-orange-50 inline-block px-2 py-0.5 rounded w-fit">{product.category}</p>
+                    <h3 className="font-semibold text-dark text-base line-clamp-2 mb-3 group-hover:text-orange-600 transition-colors flex-1">{product.name}</h3>
+                    <div className="mt-auto pt-3 border-t border-gray-50">
+                      <div className="flex items-center justify-between bg-orange-50 rounded-2xl px-3 py-2 border border-orange-100">
+                        <div>
+                          <span className="text-[10px] font-extrabold text-orange-600 block">ราคาส่ง</span>
+                          <span className="text-[10px] text-orange-400">ซื้อ {product.minWholesaleQty}+ {product.unit}</span>
+                        </div>
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="font-extrabold text-xl text-orange-600">฿{Number(product.wholesalePrice).toLocaleString()}</span>
+                          <span className="text-[10px] text-orange-400"> /{product.unit}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ===== Best Sellers (All-Time) Section ===== */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-gray-100 pb-6 gap-4">
+            <div>
+              <div className="flex items-center space-x-2 mb-2">
+                <Star className="text-yellow-400 fill-yellow-400" size={26} />
+                <h2 className="text-3xl md:text-4xl font-bold text-dark">ขายดีที่สุด ⭐</h2>
+              </div>
+              <p className="text-lg text-gray-600">สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล</p>
             </div>
             <Link to="/products" className="group flex items-center space-x-2 text-primary-600 font-semibold hover:text-primary-700 bg-primary-50 px-5 py-2.5 rounded-full transition-colors">
               <span>ดูสินค้าทั้งหมด</span>
@@ -169,26 +253,32 @@ export default function Home() {
           </div>
 
           {isLoading ? (
-            <div className="w-full flex flex-col items-center justify-center py-20 space-y-4">
-              <Loader2 className="animate-spin text-primary-500" size={48} />
+            <div className="w-full flex flex-col items-center justify-center py-16 space-y-4">
+              <Loader2 className="animate-spin text-primary-500" size={44} />
               <p className="text-gray-500 font-medium">กำลังโหลดสินค้าสุดฮิต...</p>
+            </div>
+          ) : bestSellers.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <Star size={48} className="mx-auto mb-3 opacity-30" />
+              <p className="font-medium">ยังไม่มีข้อมูลสินค้าขายดีในขณะนี้</p>
+              <p className="text-sm mt-1">ระบบจะอัปเดตทันทีเมื่อมีการสั่งซื้อสินค้า</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {bestSellers.map((product) => (
-                <Link to={`/products`} key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:-translate-y-2">
+              {bestSellers.map((product, index) => (
+                <Link to="/products" key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:-translate-y-2">
                   <div className="aspect-square relative overflow-hidden bg-gray-50">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                    />
-                    <div className="absolute top-4 left-4 bg-accent/90 backdrop-blur-sm text-dark text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-                      ขายดี 🔥
+                    <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" loading="lazy" />
+                    {index < 3 && (
+                      <div className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center text-sm font-extrabold text-white shadow-lg ${
+                        index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-400' : 'bg-amber-600'
+                      }`}>
+                        {index + 1}
+                      </div>
+                    )}
+                    <div className="absolute top-3 right-3 bg-accent/90 backdrop-blur-sm text-dark text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                      ขายดี ⭐
                     </div>
-                    {/* Hover Overlay Action */}
                     <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                       <div className="bg-white text-primary-600 px-6 py-2.5 rounded-full font-bold flex items-center space-x-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                         <ShoppingCart size={18} />
@@ -196,17 +286,10 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-6 flex-1 flex flex-col">
-                    <p className="text-xs text-primary-600 font-bold mb-2 uppercase tracking-wide bg-primary-50 inline-block px-2 py-1 rounded w-fit">{product.category}</p>
-                    <h3 className="font-semibold text-dark text-lg line-clamp-2 mb-4 group-hover:text-primary-600 transition-colors flex-1">{product.name}</h3>
-
-                    <div className="space-y-1.5 mt-auto pt-4 border-t border-gray-50">
-                      {Number(product.retailPrice) > 0 && Number(product.retailPrice) !== Number(product.wholesalePrice) && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">ราคาปลีก</span>
-                          <span className="text-sm text-gray-400 font-medium">฿{Number(product.retailPrice).toLocaleString()} / {product.unit}</span>
-                        </div>
-                      )}
+                  <div className="p-5 flex-1 flex flex-col">
+                    <p className="text-xs text-primary-600 font-bold mb-1.5 bg-primary-50 inline-block px-2 py-0.5 rounded w-fit">{product.category}</p>
+                    <h3 className="font-semibold text-dark text-base line-clamp-2 mb-3 group-hover:text-primary-600 transition-colors flex-1">{product.name}</h3>
+                    <div className="mt-auto pt-3 border-t border-gray-50">
                       <div className="flex items-center justify-between bg-primary-50 rounded-2xl px-3 py-2 border border-primary-100">
                         <div>
                           <span className="text-[10px] font-extrabold text-primary-600 block">ราคาส่ง</span>

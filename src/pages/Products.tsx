@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Loader2, PackageSearch, ShoppingCart } from 'lucide-react';
+import { Search, Filter, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Loader2, PackageSearch, ShoppingCart, TrendingUp, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CATEGORIES, Product } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
@@ -40,6 +40,12 @@ export default function Products() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(['ทั้งหมด', ...CATEGORIES]);
+
+  // สินค้าขายดี / มาแรง
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
+  const [trending, setTrending] = useState<Product[]>([]);
+  const [bestTab, setBestTab] = useState<'trending' | 'best'>('trending');
+  const [isBestLoading, setIsBestLoading] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -142,6 +148,30 @@ export default function Products() {
       return item;
     }));
   };
+
+  // ดึง best-sellers + trending เมื่อเลือกหมวดหมู่ "สินค้าขายดี"
+  useEffect(() => {
+    if (selectedCategory !== 'สินค้าขายดี') return;
+    const fetchBestData = async () => {
+      setIsBestLoading(true);
+      try {
+        const fmt = (item: any): Product => {
+          let img = item.image;
+          if (!img && item.imageId) img = `${CLOUDINARY_BASE_URL}${item.imageId}.jpg`;
+          else if (!img) img = 'https://placehold.co/400x400?text=No+Image';
+          return { ...item, images: typeof item.images === 'string' ? JSON.parse(item.images) : (item.images || []), image: img };
+        };
+        const [resTrend, resBest] = await Promise.all([
+          fetch(`${API_URL}/api/products/trending?days=7&limit=20`, { headers: { 'ngrok-skip-browser-warning': 'true' }, cache: 'no-store' }),
+          fetch(`${API_URL}/api/products/best-sellers?limit=20`, { headers: { 'ngrok-skip-browser-warning': 'true' }, cache: 'no-store' }),
+        ]);
+        if (resTrend.ok) setTrending((await resTrend.json()).map(fmt));
+        if (resBest.ok) setBestSellers((await resBest.json()).map(fmt));
+      } catch (e) { console.error(e); }
+      finally { setIsBestLoading(false); }
+    };
+    fetchBestData();
+  }, [selectedCategory]);
 
   const twentyDaysAgo = new Date();
   twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
@@ -267,8 +297,78 @@ export default function Products() {
               )}
             </div>
 
-            {/* Product Grid */}
-            {isLoading ? (
+            {/* Product Grid — Best Sellers (2 แท็บ) */}
+            {selectedCategory === 'สินค้าขายดี' ? (
+              <div>
+                {/* Tab switcher */}
+                <div className="flex gap-2 mb-6">
+                  <button
+                    onClick={() => setBestTab('trending')}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all border-2 ${bestTab === 'trending' ? 'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-200' : 'bg-white text-gray-500 border-gray-200 hover:border-orange-300 hover:text-orange-500'}`}
+                  >
+                    <TrendingUp size={16} />มาแรง 🔥
+                    {!isBestLoading && <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${bestTab === 'trending' ? 'bg-white/30 text-white' : 'bg-gray-100 text-gray-400'}`}>{trending.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).length}</span>}
+                  </button>
+                  <button
+                    onClick={() => setBestTab('best')}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all border-2 ${bestTab === 'best' ? 'bg-yellow-400 text-dark border-yellow-400 shadow-lg shadow-yellow-200' : 'bg-white text-gray-500 border-gray-200 hover:border-yellow-300 hover:text-yellow-600'}`}
+                  >
+                    <Star size={16} />ขายดีที่สุด ⭐
+                    {!isBestLoading && <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${bestTab === 'best' ? 'bg-black/10 text-dark' : 'bg-gray-100 text-gray-400'}`}>{bestSellers.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).length}</span>}
+                  </button>
+                </div>
+
+                {/* Description */}
+                <p className={`text-sm font-medium mb-6 px-4 py-2.5 rounded-xl ${bestTab === 'trending' ? 'bg-orange-50 text-orange-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                  {bestTab === 'trending' ? '🔥 สินค้าที่มีลูกค้าสั่งซื้อมากที่สุดใน 7 วันล่าสุด' : '⭐ สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล'}
+                </p>
+
+                {isBestLoading ? (
+                  <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border border-dashed border-gray-200">
+                    <Loader2 className={`animate-spin mb-4 ${bestTab === 'trending' ? 'text-orange-500' : 'text-yellow-500'}`} size={48} />
+                    <p className="text-gray-500 font-medium text-lg">กำลังโหลด...</p>
+                  </div>
+                ) : (() => {
+                    const activeList = (bestTab === 'trending' ? trending : bestSellers)
+                      .filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+                    return activeList.length === 0 ? (
+                      <div className="text-center py-32 bg-white rounded-3xl shadow-sm border border-dashed border-gray-200 flex flex-col items-center justify-center">
+                        <PackageSearch size={64} className="text-gray-300 mb-6" />
+                        <h3 className="text-xl font-bold text-dark mb-2">ยังไม่มีข้อมูลในขณะนี้</h3>
+                        <p className="text-gray-500 max-w-sm mx-auto text-sm">ระบบจะอัปเดตทันทีเมื่อมีการยืนยันออเดอร์</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {activeList.map((product, index) => (
+                          <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} key={product.id} className="relative">
+                            {/* Badge อันดับ */}
+                            {index < 3 && (
+                              <div className={`absolute top-3 left-3 z-10 w-8 h-8 rounded-full flex items-center justify-center text-sm font-extrabold text-white shadow-lg ${index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-400' : 'bg-amber-600'}`}>
+                                {index + 1}
+                              </div>
+                            )}
+                            {/* Badge type */}
+                            <div className={`absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full text-[11px] font-bold text-white shadow ${bestTab === 'trending' ? 'bg-orange-500' : 'bg-yellow-500'}`}>
+                              {bestTab === 'trending' ? `${(product as any).trendQty || 0} ชิ้น/สัปดาห์` : `${(product as any).soldQty || 0} ชิ้น`}
+                            </div>
+                            <ProductCard
+                              product={product}
+                              cartQty={cartItems.find(item => item.product.id === product.id)?.qty}
+                              onAddToCart={handleAddToCart}
+                              onUpdateQty={(p, delta) => handleQtyChange(p.id, delta)}
+                              onSetQty={(p, qty) => handleSetQty(p.id, qty)}
+                              onCardClick={setSelectedProduct}
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+              </div>
+            ) : null}
+
+            {/* Product Grid — ปกติ */}
+            {selectedCategory !== 'สินค้าขายดี' && (isLoading ? (
               <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border border-dashed border-gray-200">
                 <Loader2 className="animate-spin mb-4 text-primary-500" size={48} />
                 <p className="text-gray-500 font-medium text-lg">กำลังโหลดรายการสินค้า...</p>
@@ -379,7 +479,7 @@ export default function Products() {
                   ล้างการค้นหาทั้งหมด
                 </button>
               </div>
-            )}
+            ))}
           </main>
         </div>
       </div>
