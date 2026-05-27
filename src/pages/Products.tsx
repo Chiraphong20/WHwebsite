@@ -348,9 +348,13 @@ export default function Products() {
                               </div>
                             )}
                             {/* Badge type */}
-                            <div className={`absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full text-[11px] font-bold text-white shadow ${bestTab === 'trending' ? 'bg-orange-500' : 'bg-yellow-500'}`}>
-                              {bestTab === 'trending' ? `${(product as any).trendQty || 0} ชิ้น/สัปดาห์` : `${(product as any).soldQty || 0} ชิ้น`}
-                            </div>
+                            {!(product as any)._isFallback && (
+                              <div className={`absolute top-3 right-3 z-10 px-2 py-0.5 rounded-full text-[11px] font-bold text-white shadow ${bestTab === 'trending' ? 'bg-orange-500' : 'bg-yellow-500'}`}>
+                                {bestTab === 'trending'
+                                  ? `${(product as any).trendQty || 0} ชิ้น/${(product as any)._usedDays ? `${(product as any)._usedDays}วัน` : 'สัปดาห์'}`
+                                  : `${(product as any).soldQty || 0} ชิ้น`}
+                              </div>
+                            )}
                             <ProductCard
                               product={product}
                               cartQty={cartItems.find(item => item.product.id === product.id)?.qty}
