@@ -90,7 +90,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative w-full pt-16 md:pt-20 bg-primary-50">
         <img
-          src="/images/้home/วงษ์หิรัญ.webp"
+          src="/images/้home/bts-wh20.webp"
           alt="วงษ์หิรัญ ฟุคุโระค้าส่ง Banner"
           className="w-full h-auto object-cover sm:object-contain"
           // @ts-ignore - fetchPriority is supported in modern browsers but may not be in current React types
