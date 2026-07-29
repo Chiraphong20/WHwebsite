@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://whshop20.onrender.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://168-144-103-192.sslip.io/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
