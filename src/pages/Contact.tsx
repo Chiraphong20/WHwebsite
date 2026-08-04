@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { ChevronRight, Phone, Mail, MapPin, Clock, Facebook, Send, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ContactContent, DEFAULT_CONTACT_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
 
 // Fix Leaflet icon issue in Production
 // @ts-ignore
@@ -15,9 +16,6 @@ L.Icon.Default.mergeOptions({
 });
 
 const STORE_LOCATION: [number, number] = [14.999589298072463, 102.11873818037388];
-const LINE_OA_LINK = 'https://line.me/R/ti/p/@177eggfh';
-const FACEBOOK_LINK = 'https://www.facebook.com/wonghiran20korat';
-const EMAIL = 'wonghirangroup@gmail.com';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -35,9 +33,15 @@ const itemVariants = {
 };
 
 export default function Contact() {
+  const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT_CONTENT);
+
+  useEffect(() => {
+    fetchSiteContentMerged<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT).then(setContact);
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    window.open(LINE_OA_LINK, '_blank');
+    window.open(contact.lineOaLink, '_blank');
   };
 
   return (
@@ -88,33 +92,33 @@ export default function Contact() {
           {/* Phone */}
           <motion.a
             variants={itemVariants}
-            href="tel:0935022828"
+            href={`tel:${contact.phone.replace(/\D/g, '')}`}
             className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
           >
             <div className="w-14 h-14 bg-[#22C55E]/10 rounded-2xl flex items-center justify-center text-[#22C55E] mb-5 group-hover:scale-110 transition-all">
               <Phone size={24} />
             </div>
             <h3 className="font-bold text-zinc-900 text-lg">เบอร์โทรศัพท์</h3>
-            <p className="text-zinc-500 font-medium mt-1">093 502 2828</p>
+            <p className="text-zinc-500 font-medium mt-1">{contact.phone}</p>
           </motion.a>
 
           {/* Email */}
           <motion.a
             variants={itemVariants}
-            href={`mailto:${EMAIL}`}
+            href={`mailto:${contact.email}`}
             className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
           >
             <div className="w-14 h-14 bg-[#EA4335]/10 rounded-2xl flex items-center justify-center text-[#EA4335] mb-5 group-hover:scale-110 transition-all">
               <Mail size={24} />
             </div>
             <h3 className="font-bold text-zinc-900 text-lg">อีเมล</h3>
-            <p className="text-zinc-500 font-medium mt-1 break-all text-sm">{EMAIL}</p>
+            <p className="text-zinc-500 font-medium mt-1 break-all text-sm">{contact.email}</p>
           </motion.a>
 
           {/* Facebook */}
           <motion.a
             variants={itemVariants}
-            href={FACEBOOK_LINK}
+            href={contact.facebookLink}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
@@ -123,13 +127,13 @@ export default function Contact() {
               <Facebook size={24} />
             </div>
             <h3 className="font-bold text-zinc-900 text-lg">Facebook</h3>
-            <p className="text-zinc-500 font-medium mt-1">วงษ์หิรัญค้าส่ง20โคราช</p>
+            <p className="text-zinc-500 font-medium mt-1">{contact.facebookName}</p>
           </motion.a>
 
           {/* Line OA */}
           <motion.a
             variants={itemVariants}
-            href={LINE_OA_LINK}
+            href={contact.lineOaLink}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
@@ -138,7 +142,7 @@ export default function Contact() {
               <i className="fa-brands fa-line text-4xl"></i>
             </div>
             <h3 className="font-bold text-zinc-900 text-lg">LINE OA</h3>
-            <p className="text-zinc-500 font-medium mt-1">@177eggfh</p>
+            <p className="text-zinc-500 font-medium mt-1">{contact.lineOaName}</p>
           </motion.a>
         </motion.div>
       </div>
@@ -216,7 +220,7 @@ export default function Contact() {
                     <MapPin size={22} className="text-primary-500" />
                   </div>
                   <span className="text-zinc-600 font-medium pt-1">
-                    476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา 30000
+                    {contact.address}
                   </span>
                 </div>
                 <div className="flex items-start space-x-4">
@@ -225,8 +229,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-black text-zinc-950 uppercase tracking-wider text-sm mb-1">เวลา เปิด-ปิดโกดัง</p>
-                    <p className="text-zinc-500">เปิดทุกวัน 08:00 – 17:30 น.</p>
-                    <p className="text-xs text-zinc-400 mt-1 italic">หยุดเฉพาะวันสงกรานต์และวันปีใหม่</p>
+                    <p className="text-zinc-500">{contact.hoursLine1}</p>
+                    <p className="text-xs text-zinc-400 mt-1 italic">{contact.hoursLine2}</p>
                   </div>
                 </div>
               </div>

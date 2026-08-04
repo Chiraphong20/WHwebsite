@@ -3,11 +3,15 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Package, ShieldCheck, Star, Loader2, ShoppingCart, TrendingUp } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
+import { HomeContent, DEFAULT_HOME_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+import { getFacebookEmbedUrl } from '../lib/facebook';
 
 
 const API_URL = '';
 const CLOUD_NAME = "dffqpiizc";
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_800/`;
+
+const HIGHLIGHT_ICONS = [<Star size={32} />, <ShieldCheck size={32} />, <Package size={32} />];
 
 const FALLBACK_CATEGORIES = [
   "สินค้าขายดี", "สินค้าโปรโมชั่น", "ของเล่นเด็ก", "อุปกรณ์กีฬา",
@@ -23,6 +27,7 @@ export default function Home() {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(FALLBACK_CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
+  const [content, setContent] = useState<HomeContent>(DEFAULT_HOME_CONTENT);
 
   const formatProduct = (item: any): Product => {
     let imageUrl = item.image;
@@ -83,6 +88,7 @@ export default function Home() {
 
     fetchBestSellersData();
     fetchCategories();
+    fetchSiteContentMerged<HomeContent>('home_content', DEFAULT_HOME_CONTENT).then(setContent);
   }, []);
 
   return (
@@ -116,11 +122,7 @@ export default function Home() {
       <section className="py-16 bg-white relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            {[
-              { number: '10+ ปี', label: 'ประสบการณ์ค้าส่ง', desc: 'เชี่ยวชาญตลาดสินค้าเบ็ดเตล็ด' },
-              { number: '4 สาขา', label: 'หน้าร้านในโคราช', desc: 'พร้อมให้บริการและรับสินค้า' },
-              { number: '1,500+', label: 'คู่ค้าที่ไว้ใจเรา', desc: 'ร้านค้าปลีกทั่วประเทศ' }
-            ].map((stat, idx) => (
+            {content.stats.map((stat, idx) => (
               <div key={idx} className="p-6 rounded-3xl bg-gray-50 border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-primary-500 to-primary-700 mb-2">{stat.number}</div>
                 <div className="text-lg font-bold text-dark mb-1">{stat.label}</div>
@@ -135,23 +137,19 @@ export default function Home() {
       <section className="py-24 bg-gray-50 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-dark mb-6">ทำไมลูกค้ากว่า 1,500 รายถึงเลือกเรา?</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">จุดเด่น 3 ประการที่เป็นหัวใจหลักของวงษ์หิรัญ ที่ทำให้ธุรกิจของคุณเติบโตไปพร้อมกับเรา</p>
+            <h2 className="text-3xl md:text-5xl font-bold text-dark mb-6">{content.highlightsTitle}</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">{content.highlightsSubtitle}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: <Star size={32} />, title: 'ราคา (Price)', desc: 'เราให้ราคาขายส่งที่คุ้มค่าที่สุด ช่วยเพิ่มส่วนต่างกำไรให้ร้านค้าของคุณ ทำให้ร้าน 20 บาทของคุณโตได้ไว' },
-              { icon: <ShieldCheck size={32} />, title: 'มาตรฐาน (Standards)', desc: 'คัดสรรสินค้าคุณภาพ พร้อมระบบการจัดส่งและการบริการหลังการขายที่รัดกุม ตรวจสอบได้' },
-              { icon: <Package size={32} />, title: 'หลากหลาย (Variety)', desc: 'สินค้าครบทุกหมวดหมู่กว่า 1,000 รายการ มาที่เราที่เดียวได้ของครบ พร้อมเปิดร้านทันที ไม่ต้องวิ่งหลายที่' },
-            ].map((feature, idx) => (
+            {content.highlights.map((feature, idx) => (
               <motion.div
                 key={idx}
                 whileHover={{ y: -10 }}
                 className="p-10 bg-white rounded-[2rem] text-center shadow-lg shadow-gray-200/50 border border-gray-100 hover:border-primary-300 transition-all duration-300 group"
               >
                 <div className="w-20 h-20 mx-auto bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-primary-500 group-hover:text-white transition-colors duration-300 transform group-hover:rotate-6">
-                  {feature.icon}
+                  {HIGHLIGHT_ICONS[idx % HIGHLIGHT_ICONS.length]}
                 </div>
                 <h3 className="text-2xl font-bold text-dark mb-4">{feature.title}</h3>
                 <p className="text-gray-600 leading-relaxed font-medium">{feature.desc}</p>
@@ -321,33 +319,32 @@ export default function Home() {
             <p className="text-lg text-gray-500 max-w-xl mx-auto">ชมคลิปบรรยากาศและสินค้าของเราจาก Facebook Reels ได้เลยครับ</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
-            {[
-              "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1488611779327844%2F&show_text=false&width=267&t=0",
-              "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1094261466200926%2F&show_text=false&width=267&t=0",
-              "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F2116653489111310%2F&show_text=false&width=267&t=0",
-              "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F755963940920240%2F&show_text=false&width=268&t=0",
-            ].map((src, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="w-full max-w-[267px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300"
-              >
-                <iframe
-                  src={src}
-                  width="267"
-                  height="476"
-                  style={{ border: 'none', overflow: 'hidden', display: 'block', width: '100%' }}
-                  scrolling="no"
-                  frameBorder={0}
-                  allowFullScreen
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                  title={`Facebook Reel ${idx + 1}`}
-                />
-              </motion.div>
-            ))}
+            {content.reels.map((reelUrl, idx) => {
+              const src = getFacebookEmbedUrl(reelUrl);
+              if (!src) return null;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="w-full max-w-[267px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300"
+                >
+                  <iframe
+                    src={src}
+                    width="267"
+                    height="476"
+                    style={{ border: 'none', overflow: 'hidden', display: 'block', width: '100%' }}
+                    scrolling="no"
+                    frameBorder={0}
+                    allowFullScreen
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                    title={`Facebook Reel ${idx + 1}`}
+                  />
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

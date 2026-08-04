@@ -7,6 +7,7 @@ const navItems = [
   { name: 'หน้าแรก', path: '/' },
   { name: 'สินค้า', path: '/products' },
   { name: 'แพ็กเกจเปิดร้าน', path: '/packages' },
+  { name: 'บทความ', path: '/articles' },
   { name: 'เกี่ยวกับเรา', path: '/about' },
   { name: 'ติดต่อเรา', path: '/contact' },
 ];

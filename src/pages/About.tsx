@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronRight, Award, History, Warehouse, ShieldCheck, Users, MapPin, Phone } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AboutContent, ContactContent, DEFAULT_ABOUT_CONTENT, DEFAULT_CONTACT_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+
+const VALUE_ICONS = [<ShieldCheck size={32} />, <Award size={32} />, <Users size={32} />];
 
 export default function About() {
+  const [content, setContent] = useState<AboutContent>(DEFAULT_ABOUT_CONTENT);
+  const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT_CONTENT);
+
+  useEffect(() => {
+    fetchSiteContentMerged<AboutContent>('about_content', DEFAULT_ABOUT_CONTENT).then(setContent);
+    fetchSiteContentMerged<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT).then(setContact);
+  }, []);
+
   return (
     <div className="pt-24 pb-20 min-h-screen bg-white">
 
@@ -29,11 +40,11 @@ export default function About() {
             transition={{ duration: 0.7 }}
           >
             <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
-              รู้จักกับ<br />
-              <span className="text-primary-400">วงษ์หิรัญค้าส่ง</span>
+              {content.heroTitleLine1}<br />
+              <span className="text-primary-400">{content.heroTitleHighlight}</span>
             </h1>
             <p className="text-gray-300 text-lg max-w-xl leading-relaxed">
-              เราคือพันธมิตรที่ช่วยให้คุณเริ่มต้นและเติบโตในธุรกิจร้าน 20 บาท ด้วยประสบการณ์กว่า 10 ปี และความจริงใจ
+              {content.heroSubtitle}
             </p>
           </motion.div>
         </div>
@@ -54,34 +65,21 @@ export default function About() {
               <span>ประวัติและความเป็นมา</span>
             </div>
             <h2 className="text-3xl font-bold text-dark leading-tight">
-              จากร้านค้าเล็กๆ สู่โกดังค้าส่งขนาดใหญ่ที่ได้รับความไว้วางใจ
+              {content.storyHeading}
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              วงษ์หิรัญค้าส่ง เริ่มต้นจากการเป็นร้านขายปลีกสินค้าเบ็ดเตล็ด 
-              เราเข้าใจดีว่าพ่อค้าแม่ค้าต้องการอะไร ทั้งในเรื่องของคุณภาพสินค้า ราคาที่แข่งขันได้ 
-              และความหลากหลายที่ตอบโจทย์ผู้บริโภค
+              {content.storyParagraph1}
             </p>
             <p className="text-gray-600 leading-relaxed">
-              ปัจจุบันเราได้ขยายตัวเป็นโกดังค้าส่งขนาดใหญ่ในจังหวัดนครราชสีมา 
-              ที่รวบรวมสินค้าจากโรงงานโดยตรง เพื่อส่งต่อสินค้าคุณภาพในราคาที่คุ้มค่าที่สุดให้กับลูกค้าทั่วประเทศ
+              {content.storyParagraph2}
             </p>
             <div className="grid grid-cols-2 gap-6 pt-4">
-              <div className="border-l-4 border-primary-500 pl-4">
-                <div className="text-3xl font-bold text-dark">1,000+</div>
-                <div className="text-sm text-gray-500">รายการสินค้า</div>
-              </div>
-              <div className="border-l-4 border-primary-500 pl-4">
-                <div className="text-3xl font-bold text-dark">500+</div>
-                <div className="text-sm text-gray-500">ลูกค้าเปิดร้านใหม่</div>
-              </div>
-              <div className="border-l-4 border-primary-500 pl-4">
-                <div className="text-3xl font-bold text-dark">10+ ปี</div>
-                <div className="text-sm text-gray-500">ประสบการณ์ค้าส่ง</div>
-              </div>
-              <div className="border-l-4 border-primary-500 pl-4">
-                <div className="text-3xl font-bold text-dark">4 สาขา</div>
-                <div className="text-sm text-gray-500">หน้าร้านในโคราช</div>
-              </div>
+              {content.stats.map((stat, idx) => (
+                <div key={idx} className="border-l-4 border-primary-500 pl-4">
+                  <div className="text-3xl font-bold text-dark">{stat.number}</div>
+                  <div className="text-sm text-gray-500">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </motion.div>
 
@@ -122,11 +120,7 @@ export default function About() {
             <p className="text-gray-400 mt-2 text-sm">สิ่งที่เราเชื่อและยึดมั่นในการทำธุรกิจทุกวัน</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
-            {[
-              { icon: <ShieldCheck size={32} />, title: 'ความซื่อสัตย์', desc: 'เราค้าขายด้วยความจริงใจ แจ้งรายละเอียดสินค้าและราคาอย่างตรงไปตรงมา' },
-              { icon: <Award size={32} />, title: 'คุณภาพสินค้า', desc: 'คัดสรรสินค้าที่ใช้งานได้จริง ทนทาน และคุ้มค่ากับราคา 20 บาท' },
-              { icon: <Users size={32} />, title: 'เติบโตไปด้วยกัน', desc: 'เราไม่ได้แค่ขายสินค้า แต่เราอยากเห็นลูกค้าประสบความสำเร็จในธุรกิจ' },
-            ].map((value, i) => (
+            {content.values.map((value, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 15 }}
@@ -136,7 +130,7 @@ export default function About() {
                 className="text-center space-y-4 group"
               >
                 <div className="w-16 h-16 mx-auto bg-primary-500/10 text-primary-400 rounded-2xl flex items-center justify-center group-hover:bg-primary-500 group-hover:text-white transition-colors duration-300">
-                  {value.icon}
+                  {VALUE_ICONS[i % VALUE_ICONS.length]}
                 </div>
                 <h3 className="font-bold text-white text-lg">{value.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{value.desc}</p>
@@ -152,15 +146,15 @@ export default function About() {
           </div>
           <div className="flex-1">
             <h3 className="text-xl font-bold text-dark mb-1">มาเยี่ยมชมโกดังของเรา</h3>
-            <p className="text-gray-600">476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา 30000</p>
-            <p className="text-sm text-gray-500 mt-1">เปิดทุกวัน 08:00 – 17:30 น. | หยุดเฉพาะสงกรานต์และปีใหม่</p>
+            <p className="text-gray-600">{contact.address}</p>
+            <p className="text-sm text-gray-500 mt-1">{contact.hoursLine1} | {contact.hoursLine2}</p>
           </div>
           <a
-            href="tel:0935022828"
+            href={`tel:${contact.phone.replace(/\D/g, '')}`}
             className="inline-flex items-center space-x-2 bg-primary-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-600 transition-colors shrink-0"
           >
             <Phone size={18} />
-            <span>093 502 2828</span>
+            <span>{contact.phone}</span>
           </a>
         </div>
       </div>

@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, ChevronRight, MessageCircle, Store, Palette, Wallet, Unlock, MonitorSmartphone, ImageIcon } from 'lucide-react';
 import { motion } from 'motion/react';
-import { PACKAGES } from '../data/mockData';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import { PackagesContent, DEFAULT_PACKAGES_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+
+const FEATURE_ICONS = [<Store size={28} />, <Palette size={28} />, <Unlock size={28} />, <Wallet size={28} />];
 
 export default function Packages() {
+  const [content, setContent] = useState<PackagesContent>(DEFAULT_PACKAGES_CONTENT);
+
+  useEffect(() => {
+    fetchSiteContentMerged<PackagesContent>('packages_content', DEFAULT_PACKAGES_CONTENT).then(setContent);
+  }, []);
+
   return (
     <div className="pt-24 pb-20 min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,22 +26,16 @@ export default function Packages() {
             <ChevronRight size={14} />
             <span className="text-primary-600 font-medium">แพ็กเกจแฟรนไชส์</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">แฟรนไชส์แบบพาร์ทเนอร์ (ไม่มีสัญญา)</h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">{content.heroTitle}</h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            เหมาะสำหรับท่านที่มีประสบการณ์เป็นเจ้าของธุรกิจแล้ว และต้องการแบรนด์ร้านค้าเป็นของตัวเอง 
-            หรือต้องการขายสินค้าหลากหลายประเภทภายในร้านร่วมกัน
+            {content.heroSubtitle}
           </p>
         </div>
 
         {/* Feature Highlights from PDF */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
-          {[
-            { icon: <Store size={28} />, title: 'แบรนด์ของคุณเอง', desc: 'ร้านค้าเป็นแบรนด์ของคุณ คุณคือเจ้าของ 100%' },
-            { icon: <Palette size={28} />, title: 'ตกแต่งอิสระ', desc: 'ดีไซน์และตกแต่งร้านค้าในสไตล์ที่คุณต้องการ' },
-            { icon: <Unlock size={28} />, title: 'ไม่มีข้อผูกมัด', desc: 'ซื้อสินค้าจากแหล่งไหนเข้าร้านเพิ่มก็ได้ ไม่มีสัญญาผูกมัด' },
-            { icon: <Wallet size={28} />, title: 'บริหารและลงทุนเอง', desc: 'บริหารร้านเอง ลงทุนเอง 100% กำไรรับเต็มๆ' }
-          ].map((feature, idx) => (
-            <motion.div 
+          {content.featureHighlights.map((feature, idx) => (
+            <motion.div
               key={idx}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -42,7 +44,7 @@ export default function Packages() {
               className="bg-white p-6 rounded-3xl border border-primary-50 text-center hover:shadow-lg hover:border-primary-100 transition-all"
             >
               <div className="w-14 h-14 bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                {feature.icon}
+                {FEATURE_ICONS[idx % FEATURE_ICONS.length]}
               </div>
               <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
               <p className="text-sm text-gray-500">{feature.desc}</p>
@@ -52,12 +54,12 @@ export default function Packages() {
 
         {/* Packages Grid */}
         <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">SALES PACKAGE</h2>
-          <p className="text-gray-600">ราคานี้รวมรายการสินค้า ชั้นวาง เคาน์เตอร์ และป้ายร้านแล้ว</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">{content.salesPackageTitle}</h2>
+          <p className="text-gray-600">{content.salesPackageSubtitle}</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-          {PACKAGES.map((pkg, idx) => (
+          {content.packages.map((pkg, idx) => (
             <motion.div
               key={pkg.id}
               initial={{ opacity: 0, y: 30 }}
@@ -118,16 +120,12 @@ export default function Packages() {
         {/* Store Equipment Section */}
         <div className="mb-20">
           <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">อุปกรณ์ตกแต่งร้านที่ได้รับ</h2>
-            <p className="text-gray-600">ตัวอย่างชั้นวางสินค้าและอุปกรณ์คุณภาพมาตรฐาน</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{content.equipmentTitle}</h2>
+            <p className="text-gray-600">{content.equipmentSubtitle}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { src: '/images/packages/shelf-single.png', label: 'ชั้นวางสินค้าหน้าเดียว' },
-              { src: '/images/packages/shelf-double.png', label: 'ชั้นวางสินค้าสองหน้า' },
-              { src: '/images/packages/shelf-mesh.png', label: 'แผงตาข่ายแบบหลัง/ตะขอแขวน' }
-            ].map((equipment, idx) => (
-              <motion.div 
+            {content.equipment.map((equipment, idx) => (
+              <motion.div
                 key={idx}
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -136,7 +134,7 @@ export default function Packages() {
                 className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col items-center shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="w-full aspect-square flex items-center justify-center p-4 bg-gray-50 rounded-2xl mb-4 overflow-hidden">
-                  <img src={equipment.src} alt={equipment.label} className="max-w-full max-h-full object-contain" loading="lazy" />
+                  <img src={equipment.image} alt={equipment.label} className="max-w-full max-h-full object-contain" loading="lazy" />
                 </div>
                 <h3 className="font-bold text-gray-900 text-lg text-center">{equipment.label}</h3>
               </motion.div>
@@ -213,8 +211,8 @@ export default function Packages() {
         {/* POS GrowStore Features Grid */}
         <div className="mb-24">
           <div className="text-center mb-10">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">ฟีเจอร์เด่นของ GROW STORE POS</h3>
-            <p className="text-gray-600">ตัวช่วยให้คุณบริหารร้าน 20 บาทได้อย่างมืออาชีพและง่ายดาย</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{content.posFeaturesTitle}</h3>
+            <p className="text-gray-600">{content.posFeaturesSubtitle}</p>
           </div>
           <div className="px-2">
             <Swiper
@@ -225,23 +223,16 @@ export default function Packages() {
               pagination={{ clickable: true, dynamicBullets: true }}
               className="pb-16 px-4"
             >
-              {[
-                { src: '/images/pakages-pos-growstore/POS.png', label: 'ระบบแคชเชียร์หน้าจอ POS' },
-                { src: '/images/pakages-pos-growstore/product.png', label: 'ระบบจัดการสต๊อกสินค้า' },
-                { src: '/images/pakages-pos-growstore/report.png', label: 'แดชบอร์ดรายงานยอดขาย' },
-                { src: '/images/pakages-pos-growstore/mobile-pos.png', label: 'ดูรายงานผ่านมือถือ' },
-                { src: '/images/pakages-pos-growstore/branch.png', label: 'บริหารจัดการได้หลายสาขา' },
-                { src: '/images/pakages-pos-growstore/shortcut-menu.png', label: 'เมนูลัดขายรวดเร็ว' }
-              ].map((feature, idx) => (
+              {content.posFeatures.map((feature, idx) => (
                 <SwiperSlide key={idx} className="h-auto pb-12">
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: idx * 0.1 }}
                     className="flex flex-col items-center justify-center h-full hover:scale-[1.02] transition-all text-center group cursor-pointer px-4 w-full"
                   >
-                    <img src={feature.src} alt={feature.label} className="w-auto h-64 sm:h-80 md:h-96 lg:h-[400px] object-contain mix-blend-multiply mb-8" />
+                    <img src={feature.image} alt={feature.label} className="w-auto h-64 sm:h-80 md:h-96 lg:h-[400px] object-contain mix-blend-multiply mb-8" />
                     <h4 className="font-extrabold text-gray-900 text-2xl md:text-3xl">{feature.label}</h4>
                   </motion.div>
                 </SwiperSlide>
@@ -252,21 +243,12 @@ export default function Packages() {
 
         {/* Gallery Section */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">ภาพกิจกรรมหน้าตาของร้าน</h2>
-          <p className="text-gray-600">ตัวอย่างร้านค้าที่ใช้บริการแพ็กเกจและอุปกรณ์ตกแต่งของเรา</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{content.galleryTitle}</h2>
+          <p className="text-gray-600">{content.gallerySubtitle}</p>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {[
-            '625944877_1495111829287615_3307159896768661283_n.jpg',
-            '625999582_1494767965988668_6283804814847378561_n.jpg',
-            '648792989_1526453439486787_5066533745799125478_n.jpg',
-            '649039943_1526453346153463_931526647838172594_n.jpg',
-            '650335348_1532227425576055_6870237604650914477_n.jpg',
-            '650359189_1532971292168335_1145679540030734189_n.jpg',
-            '650381185_1532106315588166_8581240454353907097_n.jpg',
-            '652971401_1532971392168325_1634730471391681130_n.jpg'
-          ].map((imgUrl, idx) => (
+          {content.galleryImages.map((imgUrl, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -275,9 +257,9 @@ export default function Packages() {
               transition={{ delay: idx * 0.05 }}
               className="aspect-square bg-gray-200 rounded-2xl overflow-hidden relative group cursor-pointer shadow-sm hover:shadow-xl transition-shadow"
             >
-              <img 
-                src={`/images/activity/${imgUrl}`} 
-                alt={`กิจกรรมร้านค้า ${idx + 1}`} 
+              <img
+                src={imgUrl}
+                alt={`กิจกรรมร้านค้า ${idx + 1}`}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
               />

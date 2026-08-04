@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Facebook, MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { ContactContent, DEFAULT_CONTACT_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
 
 export default function Footer() {
+  const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT_CONTENT);
+
+  useEffect(() => {
+    fetchSiteContentMerged<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT).then(setContact);
+  }, []);
+
   return (
     <footer className="bg-gray-950 text-gray-400 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +30,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center space-x-4 pt-1">
               <a
-                href="https://www.facebook.com/wonghiran20korat"
+                href={contact.facebookLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-800 hover:bg-blue-600 transition-colors"
@@ -87,21 +94,21 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">ติดต่อเรา</h3>
             <div className="flex items-start space-x-3 text-sm">
               <MapPin size={17} className="text-red-500 shrink-0 mt-0.5" />
-              <span>476/1 หมู่ 2 ต.บ้านเกาะ อ.เมือง จ.นครราชสีมา 30000</span>
+              <span>{contact.address}</span>
             </div>
             <div className="flex items-center space-x-3 text-sm">
               <Phone size={17} className="text-primary-500 shrink-0" />
-              <a href="tel:0935022828" className="hover:text-white transition-colors">093 502 2828</a>
+              <a href={`tel:${contact.phone.replace(/\D/g, '')}`} className="hover:text-white transition-colors">{contact.phone}</a>
             </div>
             <div className="flex items-center space-x-3 text-sm">
               <Mail size={17} className="text-primary-500 shrink-0" />
-              <a href="mailto:wonghirangroup@gmail.com" className="hover:text-white transition-colors break-all">wonghirangroup@gmail.com</a>
+              <a href={`mailto:${contact.email}`} className="hover:text-white transition-colors break-all">{contact.email}</a>
             </div>
             <div className="flex items-start space-x-3 text-sm">
               <Clock size={17} className="text-red-500 shrink-0 mt-0.5" />
               <div>
-                <p>เปิดทุกวัน 08:00 – 17:30 น.</p>
-                <p className="text-xs text-gray-500 mt-0.5">หยุดเฉพาะวันสงกรานต์และวันปีใหม่</p>
+                <p>{contact.hoursLine1}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{contact.hoursLine2}</p>
               </div>
             </div>
           </div>
