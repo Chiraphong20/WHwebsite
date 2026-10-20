@@ -24,6 +24,8 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function Admin() {
+  // เปิดผ่าน admin.* จะไม่มี Navbar หน้าร้าน (ดู App.tsx) — แถบเมนูแอดมินชิดบนสุดได้เลย
+  const bare = window.location.hostname.split('.')[0] === 'admin';
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!getToken());
   const [user, setUser] = useState<AdminUser | null>(() => getStoredUser());
   const [activeTab, setActiveTab] = useState<Tab>('products');
@@ -181,24 +183,41 @@ export default function Admin() {
   // --- Admin dashboard ---
   return (
     <PreviewContext.Provider value={{ pushDraft }}>
-    <div className="min-h-screen bg-gray-50 pt-28 pb-20">
-      <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${showPreview ? 'max-w-none flex gap-6 items-start' : 'max-w-7xl'}`}>
-        <div className={showPreview ? 'flex-1 min-w-0' : ''}>
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold text-dark">Admin Panel</h1>
-            <p className="text-gray-500 mt-1 text-sm">
+    <div className={`min-h-screen bg-gray-50 pb-20 ${bare ? '' : 'pt-28'}`}>
+      {/* แถบเมนูด้านบน: ชื่อ + แท็บ + ปุ่มด้านขวา (เดิมมีช่องว่างด้านบนเผื่อ Navbar ของหน้าร้าน ซึ่งหน้า admin.* ไม่มี) */}
+      <header className={`sticky z-30 bg-white/95 backdrop-blur border-b border-gray-200 ${bare ? 'top-0' : 'top-24'}`}>
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-4 sm:gap-6">
+          <div className="shrink-0 leading-tight">
+            <h1 className="text-lg font-extrabold text-dark">Admin Panel</h1>
+            <p className="text-gray-500 text-xs hidden sm:block">
               {user ? `เข้าสู่ระบบเป็น ${user.name || user.username}` : 'วงษ์หิรัญ ค้าส่ง'}
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <nav className="flex-1 min-w-0 h-full flex items-stretch gap-1 overflow-x-auto" aria-label="เมนูแอดมิน">
+            {TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                aria-current={activeTab === tab.key ? 'page' : undefined}
+                className={`flex items-center gap-2 px-4 font-bold text-sm border-b-2 whitespace-nowrap transition-colors ${
+                  activeTab === tab.key
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+          <div className="shrink-0 flex items-center gap-3 sm:gap-4">
             {!showPreview && (
               <button
                 onClick={() => setShowPreview(true)}
                 className="flex items-center gap-2 text-sm font-bold text-primary-600 hover:text-primary-700 transition-colors"
               >
                 <MonitorPlay size={16} />
-                แสดงตัวอย่างหน้าเว็บ
+                <span className="hidden md:inline">แสดงตัวอย่างหน้าเว็บ</span>
               </button>
             )}
             <button
@@ -206,27 +225,14 @@ export default function Admin() {
               className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-red-500 transition-colors"
             >
               <LogOut size={16} />
-              ออกจากระบบ
+              <span className="hidden sm:inline">ออกจากระบบ</span>
             </button>
           </div>
         </div>
+      </header>
 
-        <div className="flex gap-2 mb-8 border-b border-gray-200">
-          {TABS.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-5 py-3 font-bold text-sm border-b-2 -mb-px transition-colors ${
-                activeTab === tab.key
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      <div className={`mx-auto px-4 sm:px-6 lg:px-8 pt-6 ${showPreview ? 'max-w-none flex gap-6 items-start' : 'max-w-7xl'}`}>
+        <div className={showPreview ? 'flex-1 min-w-0' : ''}>
 
         {activeTab === 'products' && <ProductsTab onSessionExpired={handleSessionExpired} />}
         {activeTab === 'content' && <ContentTab onSessionExpired={handleSessionExpired} />}
@@ -235,7 +241,7 @@ export default function Admin() {
         </div>
 
         {showPreview && (
-          <div className="hidden lg:block w-[44%] shrink-0 sticky top-24 h-[calc(100vh-7rem)]">
+          <div className="hidden lg:block w-[44%] shrink-0 sticky top-20 h-[calc(100vh-6rem)]">
             <PreviewPane siteUrl={siteUrl} frameRef={frameRef} path={pvPath} onGoto={p => toFrame({ type: 'sj-goto', path: p })} onClose={() => setShowPreview(false)} />
           </div>
         )}
