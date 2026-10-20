@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, Award, History, Warehouse, ShieldCheck, Users, MapPin, Phone } from 'lucide-react';
 import { motion } from 'motion/react';
-import { AboutContent, ContactContent, DEFAULT_ABOUT_CONTENT, DEFAULT_CONTACT_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+import { AboutContent, ContactContent, DEFAULT_ABOUT_CONTENT, DEFAULT_CONTACT_CONTENT, useSiteContent } from '../lib/siteContent';
 
 const VALUE_ICONS = [<ShieldCheck size={32} />, <Award size={32} />, <Users size={32} />];
 
 export default function About() {
-  const [content, setContent] = useState<AboutContent>(DEFAULT_ABOUT_CONTENT);
-  const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT_CONTENT);
-
-  useEffect(() => {
-    fetchSiteContentMerged<AboutContent>('about_content', DEFAULT_ABOUT_CONTENT).then(setContent);
-    fetchSiteContentMerged<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT).then(setContact);
-  }, []);
+  const content = useSiteContent<AboutContent>('about_content', DEFAULT_ABOUT_CONTENT);
+  const contact = useSiteContent<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT);
 
   return (
     <div className="pt-24 pb-20 min-h-screen bg-white">
@@ -35,6 +30,7 @@ export default function About() {
             <span className="font-medium">เกี่ยวกับเรา</span>
           </div>
           <motion.div
+            data-edit="about_content:heroTitleLine1"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
@@ -64,18 +60,18 @@ export default function About() {
               <History size={18} />
               <span>ประวัติและความเป็นมา</span>
             </div>
-            <h2 className="text-3xl font-bold text-dark leading-tight">
+            <h2 data-edit="about_content:storyHeading" className="text-3xl font-bold text-dark leading-tight">
               {content.storyHeading}
             </h2>
-            <p className="text-gray-600 leading-relaxed">
+            <p data-edit="about_content:storyParagraph1" className="text-gray-600 leading-relaxed">
               {content.storyParagraph1}
             </p>
-            <p className="text-gray-600 leading-relaxed">
+            <p data-edit="about_content:storyParagraph2" className="text-gray-600 leading-relaxed">
               {content.storyParagraph2}
             </p>
             <div className="grid grid-cols-2 gap-6 pt-4">
               {content.stats.map((stat, idx) => (
-                <div key={idx} className="border-l-4 border-primary-500 pl-4">
+                <div key={idx} data-edit={`about_content:stats.${idx}`} className="border-l-4 border-primary-500 pl-4">
                   <div className="text-3xl font-bold text-dark">{stat.number}</div>
                   <div className="text-sm text-gray-500">{stat.label}</div>
                 </div>
@@ -123,6 +119,7 @@ export default function About() {
             {content.values.map((value, i) => (
               <motion.div
                 key={i}
+                data-edit={`about_content:values.${i}`}
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -146,10 +143,11 @@ export default function About() {
           </div>
           <div className="flex-1">
             <h3 className="text-xl font-bold text-dark mb-1">มาเยี่ยมชมโกดังของเรา</h3>
-            <p className="text-gray-600">{contact.address}</p>
-            <p className="text-sm text-gray-500 mt-1">{contact.hoursLine1} | {contact.hoursLine2}</p>
+            <p className="text-gray-600" data-edit="contact_content:address">{contact.address}</p>
+            <p className="text-sm text-gray-500 mt-1" data-edit="contact_content:hoursLine1">{contact.hoursLine1} | {contact.hoursLine2}</p>
           </div>
           <a
+            data-edit="contact_content:phone"
             href={`tel:${contact.phone.replace(/\D/g, '')}`}
             className="inline-flex items-center space-x-2 bg-primary-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-600 transition-colors shrink-0"
           >

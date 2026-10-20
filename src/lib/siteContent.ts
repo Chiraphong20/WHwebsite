@@ -2,7 +2,9 @@
 // ค่าเริ่มต้นด้านล่างตรงกับข้อความเดิมที่เคย hardcode ไว้ในแต่ละหน้า — ใช้เป็น fallback
 // เวลาที่ backend ยังไม่มีข้อมูล (ยังไม่ seed) หรือเรียก API ไม่สำเร็จ เว็บจะยังแสดงผลได้ตามปกติ
 
+import { useEffect, useMemo, useState } from 'react';
 import { Package } from '../data/mockData';
+import { useDraft } from './previewDraft';
 
 export interface HomeContent {
   stats: { number: string; label: string; desc: string }[];
@@ -227,4 +229,18 @@ export async function fetchSiteContent<T>(key: string): Promise<T | null> {
 export async function fetchSiteContentMerged<T extends object>(key: string, defaults: T): Promise<T> {
   const data = await fetchSiteContent<Partial<T>>(key);
   return data ? { ...defaults, ...data } : defaults;
+}
+
+// hook สำหรับหน้าเว็บ: โหลดเนื้อหาที่บันทึกไว้ (ผสานกับค่าเริ่มต้น) และถ้าอยู่ในโหมดตัวอย่างของหน้า Admin
+// จะแสดง "ร่าง" ที่แอดมินกำลังพิมพ์แทนทันที (ยังไม่ถูกบันทึกจริง)
+export function useSiteContent<T extends object>(key: string, defaults: T): T {
+  const [saved, setSaved] = useState<T>(defaults);
+  useEffect(() => {
+    let alive = true;
+    fetchSiteContentMerged<T>(key, defaults).then(v => { if (alive) setSaved(v); });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  const draft = useDraft<Partial<T>>(key);
+  return useMemo(() => (draft ? { ...saved, ...draft } : saved), [saved, draft]);
 }

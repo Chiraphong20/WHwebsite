@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { ChevronRight, Phone, Mail, MapPin, Clock, Facebook, Send, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ContactContent, DEFAULT_CONTACT_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+import { ContactContent, DEFAULT_CONTACT_CONTENT, useSiteContent } from '../lib/siteContent';
 
 // Fix Leaflet icon issue in Production
 // @ts-ignore
@@ -33,11 +33,7 @@ const itemVariants = {
 };
 
 export default function Contact() {
-  const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT_CONTENT);
-
-  useEffect(() => {
-    fetchSiteContentMerged<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT).then(setContact);
-  }, []);
+  const contact = useSiteContent<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +87,7 @@ export default function Contact() {
         >
           {/* Phone */}
           <motion.a
+            data-edit="contact_content:phone"
             variants={itemVariants}
             href={`tel:${contact.phone.replace(/\D/g, '')}`}
             className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
@@ -104,6 +101,7 @@ export default function Contact() {
 
           {/* Email */}
           <motion.a
+            data-edit="contact_content:email"
             variants={itemVariants}
             href={`mailto:${contact.email}`}
             className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
@@ -117,6 +115,7 @@ export default function Contact() {
 
           {/* Facebook */}
           <motion.a
+            data-edit="contact_content:facebookLink"
             variants={itemVariants}
             href={contact.facebookLink}
             target="_blank"
@@ -132,6 +131,7 @@ export default function Contact() {
 
           {/* Line OA */}
           <motion.a
+            data-edit="contact_content:lineOaLink"
             variants={itemVariants}
             href={contact.lineOaLink}
             target="_blank"
@@ -219,7 +219,7 @@ export default function Contact() {
                   <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-white shrink-0">
                     <MapPin size={22} className="text-primary-500" />
                   </div>
-                  <span className="text-zinc-600 font-medium pt-1">
+                  <span className="text-zinc-600 font-medium pt-1" data-edit="contact_content:address">
                     {contact.address}
                   </span>
                 </div>
@@ -227,7 +227,7 @@ export default function Contact() {
                   <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-white shrink-0">
                     <Clock size={22} className="text-primary-500" />
                   </div>
-                  <div>
+                  <div data-edit="contact_content:hoursLine1">
                     <p className="font-black text-zinc-950 uppercase tracking-wider text-sm mb-1">เวลา เปิด-ปิดโกดัง</p>
                     <p className="text-zinc-500">{contact.hoursLine1}</p>
                     <p className="text-xs text-zinc-400 mt-1 italic">{contact.hoursLine2}</p>

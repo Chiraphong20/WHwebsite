@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import FloatingActionButton from './components/FloatingActionButton';
 import ScrollToTop from './components/ScrollToTop';
+import PreviewBridge from './components/PreviewBridge';
 import { AuthProvider } from './contexts/AuthContext';
 
 // Pages
@@ -34,6 +35,7 @@ export default function App() {
     <AuthProvider>
       <Router>
         <ScrollToTop />
+        <PreviewBridge />
       <div className="min-h-screen flex flex-col font-sans text-gray-900 selection:bg-primary-100 selection:text-primary-900">
         <Navbar />
         <main className="flex-grow">

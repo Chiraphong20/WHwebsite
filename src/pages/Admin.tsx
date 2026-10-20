@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, LogOut, ImageIcon, Package, Layers, FileText, Newspaper } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Eye, EyeOff, LogOut, ImageIcon, Package, Layers, FileText, Newspaper, MonitorPlay } from 'lucide-react';
 import { getToken, getStoredUser, setSession, clearSession, AdminUser } from '../lib/adminApi';
 import ProductsTab from '../components/admin/ProductsTab';
 import ContentTab from '../components/admin/ContentTab';
 import ArticlesTab from '../components/admin/ArticlesTab';
 import PackagesTab from '../components/admin/PackagesTab';
+import PreviewPane from '../components/admin/PreviewPane';
+import { PreviewContext } from '../components/admin/PreviewContext';
+import { previewSiteUrl } from '../lib/previewDraft';
 
 type Tab = 'products' | 'content' | 'packages' | 'articles';
+
+// คลิกส่วนใดของเว็บในตัวอย่าง → เปิดแท็บที่แก้เนื้อหาชุดนั้น
+const TAB_OF_KEY: Record<string, Tab> = {
+  home_content: 'content', about_content: 'content', contact_content: 'content', packages_content: 'packages',
+};
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   { key: 'products', label: 'สินค้า', icon: <Package size={16} /> },
@@ -19,6 +27,59 @@ export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!getToken());
   const [user, setUser] = useState<AdminUser | null>(() => getStoredUser());
   const [activeTab, setActiveTab] = useState<Tab>('products');
+
+  // ---- ตัวอย่างหน้าเว็บ (Preview) ----
+  const siteUrl = previewSiteUrl();
+  const siteOrigin = (() => { try { return new URL(siteUrl).origin; } catch { return ''; } })();
+  const [showPreview, setShowPreview] = useState(() => window.innerWidth >= 1100);
+  const [pvPath, setPvPath] = useState('/');
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const drafts = useRef(new Map<string, object>());
+  const [focusReq, setFocusReq] = useState<{ key: string; path: string; tick: number } | null>(null);
+
+  const toFrame = useCallback((msg: unknown) => {
+    if (siteOrigin) frameRef.current?.contentWindow?.postMessage(msg, siteOrigin);
+  }, [siteOrigin]);
+  const pushDraft = useCallback((key: string, value: object) => {
+    drafts.current.set(key, value);
+    toFrame({ type: 'sj-preview', key, value: JSON.parse(JSON.stringify(value)) });
+  }, [toFrame]);
+
+  useEffect(() => {
+    if (!siteOrigin) return;
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin !== siteOrigin || e.source !== frameRef.current?.contentWindow) return;
+      const d = e.data;
+      if (!d || typeof d !== 'object') return;
+      if (d.type === 'sj-ready') drafts.current.forEach((v, k) => toFrame({ type: 'sj-preview', key: k, value: JSON.parse(JSON.stringify(v)) }));
+      else if (d.type === 'sj-path' && typeof d.path === 'string') setPvPath(d.path);
+      else if (d.type === 'sj-focus' && typeof d.key === 'string' && TAB_OF_KEY[d.key]) {
+        setActiveTab(TAB_OF_KEY[d.key]);
+        setFocusReq({ key: d.key, path: String(d.path || ''), tick: Date.now() });
+      }
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [siteOrigin, toFrame]);
+
+  // เลื่อนไปยังฟอร์มของส่วนที่ถูกคลิก (รอจนแท็บโหลดเสร็จ) แล้วกะพริบกรอบเพื่อให้เห็น
+  useEffect(() => {
+    if (!focusReq) return;
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      tries += 1;
+      const scope = document.querySelector(`[data-focus-key="${focusReq.key}"]`);
+      const group = focusReq.path.split('.')[0];
+      const el = scope?.querySelector(`[data-path="${focusReq.path}"]`) ?? scope?.querySelector(`[data-path="${group}"]`) ?? scope;
+      if (el) {
+        window.clearInterval(timer);
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-4', 'ring-primary-300', 'rounded-xl');
+        window.setTimeout(() => el.classList.remove('ring-4', 'ring-primary-300'), 1800);
+      } else if (tries > 30) window.clearInterval(timer);
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [focusReq]);
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -119,8 +180,10 @@ export default function Admin() {
 
   // --- Admin dashboard ---
   return (
+    <PreviewContext.Provider value={{ pushDraft }}>
     <div className="min-h-screen bg-gray-50 pt-28 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${showPreview ? 'max-w-none flex gap-6 items-start' : 'max-w-7xl'}`}>
+        <div className={showPreview ? 'flex-1 min-w-0' : ''}>
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-extrabold text-dark">Admin Panel</h1>
@@ -128,13 +191,24 @@ export default function Admin() {
               {user ? `เข้าสู่ระบบเป็น ${user.name || user.username}` : 'วงษ์หิรัญ ค้าส่ง'}
             </p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-red-500 transition-colors"
-          >
-            <LogOut size={16} />
-            ออกจากระบบ
-          </button>
+          <div className="flex items-center gap-4">
+            {!showPreview && (
+              <button
+                onClick={() => setShowPreview(true)}
+                className="flex items-center gap-2 text-sm font-bold text-primary-600 hover:text-primary-700 transition-colors"
+              >
+                <MonitorPlay size={16} />
+                แสดงตัวอย่างหน้าเว็บ
+              </button>
+            )}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-red-500 transition-colors"
+            >
+              <LogOut size={16} />
+              ออกจากระบบ
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-2 mb-8 border-b border-gray-200">
@@ -158,7 +232,15 @@ export default function Admin() {
         {activeTab === 'content' && <ContentTab onSessionExpired={handleSessionExpired} />}
         {activeTab === 'packages' && <PackagesTab onSessionExpired={handleSessionExpired} />}
         {activeTab === 'articles' && <ArticlesTab onSessionExpired={handleSessionExpired} />}
+        </div>
+
+        {showPreview && (
+          <div className="hidden lg:block w-[44%] shrink-0 sticky top-24 h-[calc(100vh-7rem)]">
+            <PreviewPane siteUrl={siteUrl} frameRef={frameRef} path={pvPath} onGoto={p => toFrame({ type: 'sj-goto', path: p })} onClose={() => setShowPreview(false)} />
+          </div>
+        )}
       </div>
     </div>
+    </PreviewContext.Provider>
   );
 }

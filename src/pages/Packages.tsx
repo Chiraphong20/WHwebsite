@@ -5,16 +5,12 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { PackagesContent, DEFAULT_PACKAGES_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+import { PackagesContent, DEFAULT_PACKAGES_CONTENT, useSiteContent } from '../lib/siteContent';
 
 const FEATURE_ICONS = [<Store size={28} />, <Palette size={28} />, <Unlock size={28} />, <Wallet size={28} />];
 
 export default function Packages() {
-  const [content, setContent] = useState<PackagesContent>(DEFAULT_PACKAGES_CONTENT);
-
-  useEffect(() => {
-    fetchSiteContentMerged<PackagesContent>('packages_content', DEFAULT_PACKAGES_CONTENT).then(setContent);
-  }, []);
+  const content = useSiteContent<PackagesContent>('packages_content', DEFAULT_PACKAGES_CONTENT);
 
   return (
     <div className="pt-24 pb-20 min-h-screen bg-gray-50">
@@ -26,8 +22,8 @@ export default function Packages() {
             <ChevronRight size={14} />
             <span className="text-primary-600 font-medium">แพ็กเกจแฟรนไชส์</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">{content.heroTitle}</h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <h1 data-edit="packages_content:heroTitle" className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">{content.heroTitle}</h1>
+          <p data-edit="packages_content:heroSubtitle" className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
             {content.heroSubtitle}
           </p>
         </div>
@@ -37,6 +33,7 @@ export default function Packages() {
           {content.featureHighlights.map((feature, idx) => (
             <motion.div
               key={idx}
+              data-edit={`packages_content:featureHighlights.${idx}`}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -53,7 +50,7 @@ export default function Packages() {
         </div>
 
         {/* Packages Grid */}
-        <div className="mb-8 text-center">
+        <div className="mb-8 text-center" data-edit="packages_content:salesPackageTitle">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">{content.salesPackageTitle}</h2>
           <p className="text-gray-600">{content.salesPackageSubtitle}</p>
         </div>
@@ -62,6 +59,7 @@ export default function Packages() {
           {content.packages.map((pkg, idx) => (
             <motion.div
               key={pkg.id}
+              data-edit={`packages_content:packages.${idx}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -119,7 +117,7 @@ export default function Packages() {
 
         {/* Store Equipment Section */}
         <div className="mb-20">
-          <div className="text-center mb-10">
+          <div className="text-center mb-10" data-edit="packages_content:equipmentTitle">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{content.equipmentTitle}</h2>
             <p className="text-gray-600">{content.equipmentSubtitle}</p>
           </div>
@@ -127,6 +125,7 @@ export default function Packages() {
             {content.equipment.map((equipment, idx) => (
               <motion.div
                 key={idx}
+                data-edit={`packages_content:equipment.${idx}`}
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -210,7 +209,7 @@ export default function Packages() {
 
         {/* POS GrowStore Features Grid */}
         <div className="mb-24">
-          <div className="text-center mb-10">
+          <div className="text-center mb-10" data-edit="packages_content:posFeaturesTitle">
             <h3 className="text-2xl font-bold text-gray-900 mb-2">{content.posFeaturesTitle}</h3>
             <p className="text-gray-600">{content.posFeaturesSubtitle}</p>
           </div>
@@ -224,7 +223,7 @@ export default function Packages() {
               className="pb-16 px-4"
             >
               {content.posFeatures.map((feature, idx) => (
-                <SwiperSlide key={idx} className="h-auto pb-12">
+                <SwiperSlide key={idx} className="h-auto pb-12" data-edit={`packages_content:posFeatures.${idx}`}>
                   <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -242,7 +241,7 @@ export default function Packages() {
         </div>
 
         {/* Gallery Section */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12" data-edit="packages_content:galleryTitle">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{content.galleryTitle}</h2>
           <p className="text-gray-600">{content.gallerySubtitle}</p>
         </div>
@@ -251,6 +250,7 @@ export default function Packages() {
           {content.galleryImages.map((imgUrl, idx) => (
             <motion.div
               key={idx}
+              data-edit={`packages_content:galleryImages.${idx}`}
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}

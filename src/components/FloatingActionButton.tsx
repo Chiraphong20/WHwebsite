@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ContactContent, DEFAULT_CONTACT_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+import { ContactContent, DEFAULT_CONTACT_CONTENT, useSiteContent } from '../lib/siteContent';
 
 export default function FloatingActionButton() {
-  const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT_CONTENT);
-
-  useEffect(() => {
-    fetchSiteContentMerged<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT).then(setContact);
-  }, []);
+  const contact = useSiteContent<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 group">
       <motion.a
+        data-edit="contact_content:lineOaLink"
         href={contact.lineOaLink}
         target="_blank"
         rel="noopener noreferrer"

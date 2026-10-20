@@ -7,12 +7,13 @@ import {
   fetchSiteContentMerged,
 } from '../../lib/siteContent';
 import { getFacebookEmbedUrl } from '../../lib/facebook';
+import { usePushDraft } from './PreviewContext';
 
 type SectionKey = 'home_content' | 'about_content' | 'contact_content';
 
-function Field({ label, value, onChange, textarea }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean }) {
+function Field({ label, value, onChange, textarea, path }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean; path?: string }) {
   return (
-    <label className="block">
+    <label className="block" data-path={path}>
       <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</span>
       {textarea ? (
         <textarea
@@ -53,6 +54,9 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
   const [home, setHome] = useState<HomeContent>(DEFAULT_HOME_CONTENT);
   const [about, setAbout] = useState<AboutContent>(DEFAULT_ABOUT_CONTENT);
   const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT_CONTENT);
+  const markHome = usePushDraft('home_content', home, !loading);
+  const markAbout = usePushDraft('about_content', about, !loading);
+  const markContact = usePushDraft('contact_content', contact, !loading);
 
   useEffect(() => {
     (async () => {
@@ -85,7 +89,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
   const [savedHome, setSavedHome] = useState(false);
   const saveHome = async () => {
     setSavingHome(true); setSavedHome(false);
-    await save('home_content', home, () => { setSavedHome(true); setTimeout(() => setSavedHome(false), 1500); });
+    await save('home_content', home, () => { markHome(home); setSavedHome(true); setTimeout(() => setSavedHome(false), 1500); });
     setSavingHome(false);
   };
 
@@ -93,7 +97,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
   const [savedAbout, setSavedAbout] = useState(false);
   const saveAbout = async () => {
     setSavingAbout(true); setSavedAbout(false);
-    await save('about_content', about, () => { setSavedAbout(true); setTimeout(() => setSavedAbout(false), 1500); });
+    await save('about_content', about, () => { markAbout(about); setSavedAbout(true); setTimeout(() => setSavedAbout(false), 1500); });
     setSavingAbout(false);
   };
 
@@ -101,7 +105,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
   const [savedContact, setSavedContact] = useState(false);
   const saveContact = async () => {
     setSavingContact(true); setSavedContact(false);
-    await save('contact_content', contact, () => { setSavedContact(true); setTimeout(() => setSavedContact(false), 1500); });
+    await save('contact_content', contact, () => { markContact(contact); setSavedContact(true); setTimeout(() => setSavedContact(false), 1500); });
     setSavingContact(false);
   };
 
@@ -116,7 +120,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
   return (
     <div className="space-y-8">
       {/* หน้าแรก */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+      <section data-focus-key="home_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-extrabold text-dark">หน้าแรก — สถิติและจุดเด่น</h2>
           <SaveButton saving={savingHome} saved={savedHome} onClick={saveHome} />
@@ -127,7 +131,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
             <p className="text-sm font-bold text-dark mb-2">แถบสถิติ 3 อัน</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {home.stats.map((s, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
+                <div key={i} data-path={`stats.${i}`} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
                   <Field label="ตัวเลข" value={s.number} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, number: v } : x) }))} />
                   <Field label="หัวข้อ" value={s.label} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, label: v } : x) }))} />
                   <Field label="คำอธิบาย" value={s.desc} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, desc: v } : x) }))} />
@@ -136,14 +140,14 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
             </div>
           </div>
 
-          <Field label="หัวข้อจุดเด่น" value={home.highlightsTitle} onChange={v => setHome(h => ({ ...h, highlightsTitle: v }))} />
-          <Field label="คำอธิบายจุดเด่น" value={home.highlightsSubtitle} onChange={v => setHome(h => ({ ...h, highlightsSubtitle: v }))} textarea />
+          <Field path="highlightsTitle" label="หัวข้อจุดเด่น" value={home.highlightsTitle} onChange={v => setHome(h => ({ ...h, highlightsTitle: v }))} />
+          <Field path="highlightsSubtitle" label="คำอธิบายจุดเด่น" value={home.highlightsSubtitle} onChange={v => setHome(h => ({ ...h, highlightsSubtitle: v }))} textarea />
 
           <div>
             <p className="text-sm font-bold text-dark mb-2">การ์ดจุดเด่น 3 อัน</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {home.highlights.map((s, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
+                <div key={i} data-path={`highlights.${i}`} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
                   <Field label="หัวข้อ" value={s.title} onChange={v => setHome(h => ({ ...h, highlights: h.highlights.map((x, xi) => xi === i ? { ...x, title: v } : x) }))} />
                   <Field label="คำอธิบาย" value={s.desc} onChange={v => setHome(h => ({ ...h, highlights: h.highlights.map((x, xi) => xi === i ? { ...x, desc: v } : x) }))} textarea />
                 </div>
@@ -169,7 +173,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
               {home.reels.map((url, i) => {
                 const preview = getFacebookEmbedUrl(url);
                 return (
-                  <div key={i} className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3">
+                  <div key={i} data-path={`reels.${i}`} className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3">
                     <div className="flex-1 space-y-2">
                       <input
                         type="text"
@@ -197,7 +201,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
       </section>
 
       {/* เกี่ยวกับเรา */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+      <section data-focus-key="about_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-extrabold text-dark">เกี่ยวกับเรา</h2>
           <SaveButton saving={savingAbout} saved={savedAbout} onClick={saveAbout} />
@@ -205,19 +209,19 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="หัวข้อบรรทัดแรก" value={about.heroTitleLine1} onChange={v => setAbout(a => ({ ...a, heroTitleLine1: v }))} />
-            <Field label="หัวข้อเน้นสี" value={about.heroTitleHighlight} onChange={v => setAbout(a => ({ ...a, heroTitleHighlight: v }))} />
+            <Field path="heroTitleLine1" label="หัวข้อบรรทัดแรก" value={about.heroTitleLine1} onChange={v => setAbout(a => ({ ...a, heroTitleLine1: v }))} />
+            <Field path="heroTitleHighlight" label="หัวข้อเน้นสี" value={about.heroTitleHighlight} onChange={v => setAbout(a => ({ ...a, heroTitleHighlight: v }))} />
           </div>
-          <Field label="คำโปรย" value={about.heroSubtitle} onChange={v => setAbout(a => ({ ...a, heroSubtitle: v }))} textarea />
-          <Field label="หัวข้อประวัติ" value={about.storyHeading} onChange={v => setAbout(a => ({ ...a, storyHeading: v }))} />
-          <Field label="ย่อหน้าประวัติ 1" value={about.storyParagraph1} onChange={v => setAbout(a => ({ ...a, storyParagraph1: v }))} textarea />
-          <Field label="ย่อหน้าประวัติ 2" value={about.storyParagraph2} onChange={v => setAbout(a => ({ ...a, storyParagraph2: v }))} textarea />
+          <Field path="heroSubtitle" label="คำโปรย" value={about.heroSubtitle} onChange={v => setAbout(a => ({ ...a, heroSubtitle: v }))} textarea />
+          <Field path="storyHeading" label="หัวข้อประวัติ" value={about.storyHeading} onChange={v => setAbout(a => ({ ...a, storyHeading: v }))} />
+          <Field path="storyParagraph1" label="ย่อหน้าประวัติ 1" value={about.storyParagraph1} onChange={v => setAbout(a => ({ ...a, storyParagraph1: v }))} textarea />
+          <Field path="storyParagraph2" label="ย่อหน้าประวัติ 2" value={about.storyParagraph2} onChange={v => setAbout(a => ({ ...a, storyParagraph2: v }))} textarea />
 
           <div>
             <p className="text-sm font-bold text-dark mb-2">สถิติ 4 อัน</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {about.stats.map((s, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
+                <div key={i} data-path={`stats.${i}`} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
                   <Field label="ตัวเลข" value={s.number} onChange={v => setAbout(a => ({ ...a, stats: a.stats.map((x, xi) => xi === i ? { ...x, number: v } : x) }))} />
                   <Field label="หัวข้อ" value={s.label} onChange={v => setAbout(a => ({ ...a, stats: a.stats.map((x, xi) => xi === i ? { ...x, label: v } : x) }))} />
                 </div>
@@ -229,7 +233,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
             <p className="text-sm font-bold text-dark mb-2">ค่านิยม 3 อัน</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {about.values.map((s, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
+                <div key={i} data-path={`values.${i}`} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
                   <Field label="หัวข้อ" value={s.title} onChange={v => setAbout(a => ({ ...a, values: a.values.map((x, xi) => xi === i ? { ...x, title: v } : x) }))} />
                   <Field label="คำอธิบาย" value={s.desc} onChange={v => setAbout(a => ({ ...a, values: a.values.map((x, xi) => xi === i ? { ...x, desc: v } : x) }))} textarea />
                 </div>
@@ -240,24 +244,24 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
       </section>
 
       {/* ติดต่อเรา */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+      <section data-focus-key="contact_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-extrabold text-dark">ข้อมูลติดต่อ</h2>
           <SaveButton saving={savingContact} saved={savedContact} onClick={saveContact} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="เบอร์โทรศัพท์" value={contact.phone} onChange={v => setContact(c => ({ ...c, phone: v }))} />
-          <Field label="อีเมล" value={contact.email} onChange={v => setContact(c => ({ ...c, email: v }))} />
-          <Field label="ลิงก์ Facebook" value={contact.facebookLink} onChange={v => setContact(c => ({ ...c, facebookLink: v }))} />
-          <Field label="ชื่อเพจ Facebook" value={contact.facebookName} onChange={v => setContact(c => ({ ...c, facebookName: v }))} />
-          <Field label="ลิงก์ LINE OA" value={contact.lineOaLink} onChange={v => setContact(c => ({ ...c, lineOaLink: v }))} />
-          <Field label="ชื่อ LINE OA" value={contact.lineOaName} onChange={v => setContact(c => ({ ...c, lineOaName: v }))} />
-          <Field label="เวลาเปิด-ปิด บรรทัด 1" value={contact.hoursLine1} onChange={v => setContact(c => ({ ...c, hoursLine1: v }))} />
-          <Field label="เวลาเปิด-ปิด บรรทัด 2" value={contact.hoursLine2} onChange={v => setContact(c => ({ ...c, hoursLine2: v }))} />
+          <Field path="phone" label="เบอร์โทรศัพท์" value={contact.phone} onChange={v => setContact(c => ({ ...c, phone: v }))} />
+          <Field path="email" label="อีเมล" value={contact.email} onChange={v => setContact(c => ({ ...c, email: v }))} />
+          <Field path="facebookLink" label="ลิงก์ Facebook" value={contact.facebookLink} onChange={v => setContact(c => ({ ...c, facebookLink: v }))} />
+          <Field path="facebookName" label="ชื่อเพจ Facebook" value={contact.facebookName} onChange={v => setContact(c => ({ ...c, facebookName: v }))} />
+          <Field path="lineOaLink" label="ลิงก์ LINE OA" value={contact.lineOaLink} onChange={v => setContact(c => ({ ...c, lineOaLink: v }))} />
+          <Field path="lineOaName" label="ชื่อ LINE OA" value={contact.lineOaName} onChange={v => setContact(c => ({ ...c, lineOaName: v }))} />
+          <Field path="hoursLine1" label="เวลาเปิด-ปิด บรรทัด 1" value={contact.hoursLine1} onChange={v => setContact(c => ({ ...c, hoursLine1: v }))} />
+          <Field path="hoursLine2" label="เวลาเปิด-ปิด บรรทัด 2" value={contact.hoursLine2} onChange={v => setContact(c => ({ ...c, hoursLine2: v }))} />
         </div>
         <div className="mt-4">
-          <Field label="ที่อยู่" value={contact.address} onChange={v => setContact(c => ({ ...c, address: v }))} textarea />
+          <Field path="address" label="ที่อยู่" value={contact.address} onChange={v => setContact(c => ({ ...c, address: v }))} textarea />
         </div>
       </section>
     </div>

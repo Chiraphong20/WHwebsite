@@ -3,6 +3,7 @@ import { Loader2, Save, Check, Plus, Trash2, Upload } from 'lucide-react';
 import { Package } from '../../data/mockData';
 import { adminFetch, AdminSessionExpiredError } from '../../lib/adminApi';
 import { PackagesContent, DEFAULT_PACKAGES_CONTENT, fetchSiteContentMerged } from '../../lib/siteContent';
+import { usePushDraft } from './PreviewContext';
 
 const CLOUD_NAME = 'dffqpiizc';
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
@@ -23,9 +24,9 @@ async function uploadToCloudinary(file: File, folder: string): Promise<string> {
   return data.secure_url as string;
 }
 
-function Field({ label, value, onChange, textarea }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean }) {
+function Field({ label, value, onChange, textarea, path }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean; path?: string }) {
   return (
-    <label className="block">
+    <label className="block" data-path={path}>
       <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</span>
       {textarea ? (
         <textarea
@@ -179,6 +180,7 @@ export default function PackagesTab({ onSessionExpired }: { onSessionExpired: ()
   const [error, setError] = useState('');
   const [uploadingPkgIdx, setUploadingPkgIdx] = useState<number | null>(null);
   const pkgFileRefs = useRef<Record<number, HTMLInputElement | null>>({});
+  const markSaved = usePushDraft('packages_content', content, !loading);
 
   useEffect(() => {
     fetchSiteContentMerged<PackagesContent>('packages_content', DEFAULT_PACKAGES_CONTENT)
@@ -235,6 +237,7 @@ export default function PackagesTab({ onSessionExpired }: { onSessionExpired: ()
         body: JSON.stringify(content),
       });
       if (res.ok) {
+        markSaved(content);
         setSaved(true);
         setTimeout(() => setSaved(false), 1500);
       } else {
@@ -256,7 +259,7 @@ export default function PackagesTab({ onSessionExpired }: { onSessionExpired: ()
   }
 
   return (
-    <div>
+    <div data-focus-key="packages_content">
       <div className="flex items-center justify-between mb-6">
         <p className="text-gray-500 text-sm">แสดงในหน้า /packages</p>
         <button
@@ -278,8 +281,8 @@ export default function PackagesTab({ onSessionExpired }: { onSessionExpired: ()
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="text-lg font-extrabold text-dark mb-4">หัวข้อหน้าแพ็กเกจ</h2>
           <div className="space-y-4">
-            <Field label="หัวข้อใหญ่" value={content.heroTitle} onChange={v => setContent(c => ({ ...c, heroTitle: v }))} />
-            <Field label="คำอธิบาย" value={content.heroSubtitle} onChange={v => setContent(c => ({ ...c, heroSubtitle: v }))} textarea />
+            <Field path="heroTitle" label="หัวข้อใหญ่" value={content.heroTitle} onChange={v => setContent(c => ({ ...c, heroTitle: v }))} />
+            <Field path="heroSubtitle" label="คำอธิบาย" value={content.heroSubtitle} onChange={v => setContent(c => ({ ...c, heroSubtitle: v }))} textarea />
           </div>
         </section>
 
@@ -296,7 +299,7 @@ export default function PackagesTab({ onSessionExpired }: { onSessionExpired: ()
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {content.featureHighlights.map((f, i) => (
-              <div key={i} className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
+              <div key={i} data-path={`featureHighlights.${i}`} className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="flex-1 space-y-2">
                     <Field label="หัวข้อ" value={f.title} onChange={v => setContent(c => ({ ...c, featureHighlights: c.featureHighlights.map((x, xi) => xi === i ? { ...x, title: v } : x) }))} />
@@ -326,13 +329,13 @@ export default function PackagesTab({ onSessionExpired }: { onSessionExpired: ()
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <Field label="หัวข้อ" value={content.salesPackageTitle} onChange={v => setContent(c => ({ ...c, salesPackageTitle: v }))} />
-            <Field label="คำอธิบาย" value={content.salesPackageSubtitle} onChange={v => setContent(c => ({ ...c, salesPackageSubtitle: v }))} />
+            <Field path="salesPackageTitle" label="หัวข้อ" value={content.salesPackageTitle} onChange={v => setContent(c => ({ ...c, salesPackageTitle: v }))} />
+            <Field path="salesPackageSubtitle" label="คำอธิบาย" value={content.salesPackageSubtitle} onChange={v => setContent(c => ({ ...c, salesPackageSubtitle: v }))} />
           </div>
 
           <div className="space-y-6">
             {content.packages.map((pkg, idx) => (
-              <div key={pkg.id} className="border border-gray-100 rounded-2xl p-6">
+              <div key={pkg.id} data-path={`packages.${idx}`} className="border border-gray-100 rounded-2xl p-6">
                 <div className="flex items-start gap-6">
                   <div className="w-32 shrink-0 space-y-2">
                     <div className="w-32 h-32 rounded-xl bg-gray-50 border border-dashed border-gray-200 overflow-hidden flex items-center justify-center">
@@ -401,42 +404,42 @@ export default function PackagesTab({ onSessionExpired }: { onSessionExpired: ()
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="text-lg font-extrabold text-dark mb-4">อุปกรณ์ตกแต่งร้าน</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <Field label="หัวข้อ" value={content.equipmentTitle} onChange={v => setContent(c => ({ ...c, equipmentTitle: v }))} />
-            <Field label="คำอธิบาย" value={content.equipmentSubtitle} onChange={v => setContent(c => ({ ...c, equipmentSubtitle: v }))} />
+            <Field path="equipmentTitle" label="หัวข้อ" value={content.equipmentTitle} onChange={v => setContent(c => ({ ...c, equipmentTitle: v }))} />
+            <Field path="equipmentSubtitle" label="คำอธิบาย" value={content.equipmentSubtitle} onChange={v => setContent(c => ({ ...c, equipmentSubtitle: v }))} />
           </div>
-          <ImageLabelListEditor
+          <div data-path="equipment"><ImageLabelListEditor
             items={content.equipment}
             onChange={equipment => setContent(c => ({ ...c, equipment }))}
             folder="wh_packages_equipment"
-          />
+          /></div>
         </section>
 
         {/* ฟีเจอร์ POS */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="text-lg font-extrabold text-dark mb-4">ฟีเจอร์ GROW STORE POS</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <Field label="หัวข้อ" value={content.posFeaturesTitle} onChange={v => setContent(c => ({ ...c, posFeaturesTitle: v }))} />
-            <Field label="คำอธิบาย" value={content.posFeaturesSubtitle} onChange={v => setContent(c => ({ ...c, posFeaturesSubtitle: v }))} />
+            <Field path="posFeaturesTitle" label="หัวข้อ" value={content.posFeaturesTitle} onChange={v => setContent(c => ({ ...c, posFeaturesTitle: v }))} />
+            <Field path="posFeaturesSubtitle" label="คำอธิบาย" value={content.posFeaturesSubtitle} onChange={v => setContent(c => ({ ...c, posFeaturesSubtitle: v }))} />
           </div>
-          <ImageLabelListEditor
+          <div data-path="posFeatures"><ImageLabelListEditor
             items={content.posFeatures}
             onChange={posFeatures => setContent(c => ({ ...c, posFeatures }))}
             folder="wh_packages_pos"
-          />
+          /></div>
         </section>
 
         {/* แกลเลอรี */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="text-lg font-extrabold text-dark mb-4">แกลเลอรีภาพกิจกรรม</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <Field label="หัวข้อ" value={content.galleryTitle} onChange={v => setContent(c => ({ ...c, galleryTitle: v }))} />
-            <Field label="คำอธิบาย" value={content.gallerySubtitle} onChange={v => setContent(c => ({ ...c, gallerySubtitle: v }))} />
+            <Field path="galleryTitle" label="หัวข้อ" value={content.galleryTitle} onChange={v => setContent(c => ({ ...c, galleryTitle: v }))} />
+            <Field path="gallerySubtitle" label="คำอธิบาย" value={content.gallerySubtitle} onChange={v => setContent(c => ({ ...c, gallerySubtitle: v }))} />
           </div>
-          <ImageListEditor
+          <div data-path="galleryImages"><ImageListEditor
             images={content.galleryImages}
             onChange={galleryImages => setContent(c => ({ ...c, galleryImages }))}
             folder="wh_packages_gallery"
-          />
+          /></div>
         </section>
       </div>
     </div>

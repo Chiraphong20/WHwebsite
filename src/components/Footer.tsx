@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Facebook, MapPin, Phone, Mail, Clock } from 'lucide-react';
-import { ContactContent, DEFAULT_CONTACT_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+import { ContactContent, DEFAULT_CONTACT_CONTENT, useSiteContent } from '../lib/siteContent';
 
 export default function Footer() {
-  const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT_CONTENT);
-
-  useEffect(() => {
-    fetchSiteContentMerged<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT).then(setContact);
-  }, []);
+  const contact = useSiteContent<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT);
 
   return (
-    <footer className="bg-gray-950 text-gray-400 pt-16 pb-8">
+    <footer className="bg-gray-950 text-gray-400 pt-16 pb-8" data-edit="contact_content:phone">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
 

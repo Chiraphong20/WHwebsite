@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Package, ShieldCheck, Star, Loader2, ShoppingCart, TrendingUp } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
-import { HomeContent, DEFAULT_HOME_CONTENT, fetchSiteContentMerged } from '../lib/siteContent';
+import { HomeContent, DEFAULT_HOME_CONTENT, useSiteContent } from '../lib/siteContent';
 import { getFacebookEmbedUrl } from '../lib/facebook';
 
 
@@ -27,7 +27,7 @@ export default function Home() {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(FALLBACK_CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
-  const [content, setContent] = useState<HomeContent>(DEFAULT_HOME_CONTENT);
+  const content = useSiteContent<HomeContent>('home_content', DEFAULT_HOME_CONTENT);
 
   const formatProduct = (item: any): Product => {
     let imageUrl = item.image;
@@ -88,7 +88,6 @@ export default function Home() {
 
     fetchBestSellersData();
     fetchCategories();
-    fetchSiteContentMerged<HomeContent>('home_content', DEFAULT_HOME_CONTENT).then(setContent);
   }, []);
 
   return (
@@ -123,7 +122,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             {content.stats.map((stat, idx) => (
-              <div key={idx} className="p-6 rounded-3xl bg-gray-50 border border-gray-100 hover:shadow-md transition-shadow">
+              <div key={idx} data-edit={`home_content:stats.${idx}`} className="p-6 rounded-3xl bg-gray-50 border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-primary-500 to-primary-700 mb-2">{stat.number}</div>
                 <div className="text-lg font-bold text-dark mb-1">{stat.label}</div>
                 <div className="text-sm text-gray-500 font-medium">{stat.desc}</div>
@@ -136,7 +135,7 @@ export default function Home() {
       {/* Highlights Section */}
       <section className="py-24 bg-gray-50 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16" data-edit="home_content:highlightsTitle">
             <h2 className="text-3xl md:text-5xl font-bold text-dark mb-6">{content.highlightsTitle}</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">{content.highlightsSubtitle}</p>
           </div>
@@ -145,6 +144,7 @@ export default function Home() {
             {content.highlights.map((feature, idx) => (
               <motion.div
                 key={idx}
+                data-edit={`home_content:highlights.${idx}`}
                 whileHover={{ y: -10 }}
                 className="p-10 bg-white rounded-[2rem] text-center shadow-lg shadow-gray-200/50 border border-gray-100 hover:border-primary-300 transition-all duration-300 group"
               >
@@ -325,6 +325,7 @@ export default function Home() {
               return (
                 <motion.div
                   key={idx}
+                  data-edit={`home_content:reels.${idx}`}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
