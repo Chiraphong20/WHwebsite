@@ -12,6 +12,7 @@ export interface HomeContent {
   highlightsSubtitle: string;
   highlights: { title: string; desc: string }[];
   reels: string[]; // ลิงก์ Facebook Reel เช่น https://www.facebook.com/reel/xxxxxxx/
+  heroBanner: { image: string; alt: string; link: string }; // แบนเนอร์ใหญ่บนสุดของหน้าแรก (link ว่าง = ไม่กดไปไหน)
 }
 
 export interface AboutContent {
@@ -56,6 +57,7 @@ export interface PackagesContent {
 }
 
 export const DEFAULT_HOME_CONTENT: HomeContent = {
+  heroBanner: { image: '/images/้home/6040.webp', alt: 'วงษ์หิรัญ ฟุคุโระค้าส่ง Banner', link: '' },
   stats: [
     { number: '10+ ปี', label: 'ประสบการณ์ค้าส่ง', desc: 'เชี่ยวชาญตลาดสินค้าเบ็ดเตล็ด' },
     { number: '4 สาขา', label: 'หน้าร้านในโคราช', desc: 'พร้อมให้บริการและรับสินค้า' },

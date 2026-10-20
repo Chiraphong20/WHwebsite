@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Loader2, Save, Check, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Loader2, Save, Check, Plus, Trash2, Upload } from 'lucide-react';
 import { adminFetch, AdminSessionExpiredError } from '../../lib/adminApi';
 import {
   HomeContent, AboutContent, ContactContent,
@@ -8,6 +8,7 @@ import {
 } from '../../lib/siteContent';
 import { getFacebookEmbedUrl } from '../../lib/facebook';
 import { usePushDraft } from './PreviewContext';
+import { uploadToCloudinary } from '../../lib/cloudinary';
 
 type SectionKey = 'home_content' | 'about_content' | 'contact_content';
 
@@ -31,6 +32,51 @@ function Field({ label, value, onChange, textarea, path }: { label: string; valu
         />
       )}
     </label>
+  );
+}
+
+// แบนเนอร์ใหญ่บนสุดของหน้าแรก (Hero): เปลี่ยนรูป (อัปโหลดหรือวางลิงก์) · คำอธิบายรูป · ลิงก์เมื่อคลิก
+function HeroBannerEditor({ value, onChange }: { value: HomeContent['heroBanner']; onChange: (v: HomeContent['heroBanner']) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError('');
+    try {
+      onChange({ ...value, image: await uploadToCloudinary(file, 'wh_hero') });
+    } catch (err: any) {
+      setError(err.message || 'อัปโหลดรูปไม่สำเร็จ');
+    } finally {
+      setUploading(false);
+      if (input.current) input.current.value = '';
+    }
+  };
+  return (
+    <div data-path="heroBanner" className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
+      <p className="text-sm font-bold text-dark">แบนเนอร์ใหญ่บนสุด (Hero)</p>
+      <div className="rounded-xl overflow-hidden border border-dashed border-gray-200 bg-white">
+        {value.image ? <img src={value.image} alt={value.alt} className="w-full max-h-56 object-contain" /> : <p className="p-8 text-center text-xs text-gray-300">ไม่มีรูป</p>}
+      </div>
+      <div className="flex items-center gap-3 flex-wrap">
+        <button
+          onClick={() => input.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:border-primary-400 hover:text-primary-600 transition-colors"
+        >
+          {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+          {uploading ? 'กำลังอัปโหลด...' : 'เปลี่ยนรูปแบนเนอร์'}
+        </button>
+        <input ref={input} type="file" accept="image/*" onChange={onFile} className="hidden" />
+        <span className="text-xs text-gray-400">แนะนำรูปแนวนอน กว้างประมาณ 1920px (อัตราส่วนใกล้เคียง 16:9) ไฟล์ WebP/JPG ไม่ควรเกิน ~500KB</span>
+      </div>
+      {error && <p className="text-red-500 text-xs font-medium bg-red-50 px-3 py-2 rounded-xl">{error}</p>}
+      <Field label="ลิงก์รูปแบนเนอร์ (วางลิงก์เองได้)" value={value.image} onChange={v => onChange({ ...value, image: v })} />
+      <Field label="คำอธิบายรูป (สำหรับผู้พิการทางสายตา/SEO)" value={value.alt} onChange={v => onChange({ ...value, alt: v })} />
+      <Field label="ลิงก์เมื่อคลิกแบนเนอร์ (เว้นว่าง = ไม่ลิงก์ไปไหน)" value={value.link} onChange={v => onChange({ ...value, link: v })} />
+    </div>
   );
 }
 
@@ -127,6 +173,8 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
         </div>
 
         <div className="space-y-6">
+          <HeroBannerEditor value={home.heroBanner} onChange={heroBanner => setHome(h => ({ ...h, heroBanner }))} />
+
           <div>
             <p className="text-sm font-bold text-dark mb-2">แถบสถิติ 3 อัน</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
