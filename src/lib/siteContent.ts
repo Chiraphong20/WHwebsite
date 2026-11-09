@@ -13,8 +13,19 @@ export interface HomeContent {
   highlights: { title: string; desc: string }[];
   reels: string[]; // ลิงก์ Facebook Reel เช่น https://www.facebook.com/reel/xxxxxxx/
   heroBanner: HeroSlide; // แบนเนอร์เดิมรูปเดียว (ใช้เป็น fallback เมื่อยังไม่มี heroBanners)
+  imageStrip?: StripImage[]; // แถวรูปภาพใต้แถบสถิติ แสดง 5 ภาพต่อแถว เกิน 5 เลื่อนอัตโนมัติ
+  bestSellers?: BestSellersConfig; // ส่วนสินค้าขายดี: ตั้งหัวข้อและเลือกสินค้าเอง (ไม่มีสินค้า = ใช้ยอดขายจริงอัตโนมัติ)
   heroBanners?: HeroSlide[]; // แบนเนอร์ใหญ่บนสุดของหน้าแรก หลายรูป สไลด์อัตโนมัติ (link ว่าง = ไม่กดไปไหน)
 }
+
+export interface StripImage { image: string; alt: string; link: string }
+
+// สินค้าที่แอดมินเลือกเองในส่วน "ขายดีที่สุด" (เก็บข้อมูลที่ใช้แสดงไว้เลย หน้าแรกจึงไม่ต้องโหลดสินค้าทั้งร้าน)
+export interface BestSellerItem {
+  id: string; name: string; image: string; category: string;
+  wholesalePrice: number; minWholesaleQty: number; unit: string;
+}
+export interface BestSellersConfig { title: string; subtitle: string; products: BestSellerItem[] }
 
 export interface HeroSlide { image: string; alt: string; link: string }
 

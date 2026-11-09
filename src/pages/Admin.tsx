@@ -25,7 +25,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
 
 export default function Admin() {
   // เปิดผ่าน admin.* จะไม่มี Navbar หน้าร้าน (ดู App.tsx) — แถบเมนูแอดมินชิดบนสุดได้เลย
-  const bare = window.location.hostname.split('.')[0] === 'admin';
+  const bare = true; // แอดมินเป็นหน้าจอแยก ไม่มี Navbar หน้าร้านทั้งบน admin.* และ /admin
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!getToken());
   const [user, setUser] = useState<AdminUser | null>(() => getStoredUser());
   const [activeTab, setActiveTab] = useState<Tab>('products');

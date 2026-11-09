@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Save, Check, Plus, Trash2, Upload, ArrowUp, ArrowDown } from 'lucide-react';
 import { adminFetch, AdminSessionExpiredError } from '../../lib/adminApi';
 import {
-  HomeContent, HeroSlide, AboutContent, ContactContent,
+  HomeContent, HeroSlide, StripImage, BestSellerItem, BestSellersConfig, AboutContent, ContactContent,
   DEFAULT_HOME_CONTENT, DEFAULT_ABOUT_CONTENT, DEFAULT_CONTACT_CONTENT,
   fetchSiteContentMerged,
 } from '../../lib/siteContent';
@@ -36,8 +36,8 @@ function Field({ label, value, onChange, textarea, path }: { label: string; valu
 }
 
 // สไลด์เดียวของแบนเนอร์: เปลี่ยนรูป (อัปโหลดหรือวางลิงก์) · คำอธิบายรูป · ลิงก์เมื่อคลิก
-function HeroSlideEditor({ index, total, value, onChange, onMove, onRemove }: {
-  index: number; total: number; value: HeroSlide;
+function HeroSlideEditor({ index, total, value, onChange, onMove, onRemove, allowEmpty }: {
+  allowEmpty?: boolean; index: number; total: number; value: HeroSlide;
   onChange: (v: HeroSlide) => void; onMove: (dir: -1 | 1) => void; onRemove: () => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
@@ -64,7 +64,7 @@ function HeroSlideEditor({ index, total, value, onChange, onMove, onRemove }: {
         <div className="flex items-center gap-1">
           <button onClick={() => onMove(-1)} disabled={index === 0} title="เลื่อนขึ้น" className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowUp size={16} /></button>
           <button onClick={() => onMove(1)} disabled={index === total - 1} title="เลื่อนลง" className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowDown size={16} /></button>
-          <button onClick={onRemove} disabled={total === 1} title="ลบรูปนี้" className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 disabled:opacity-30"><Trash2 size={16} /></button>
+          <button onClick={onRemove} disabled={total === 1 && !allowEmpty} title="ลบรูปนี้" className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 disabled:opacity-30"><Trash2 size={16} /></button>
         </div>
       </div>
       <div className="rounded-xl overflow-hidden border border-dashed border-gray-200 bg-white">
@@ -116,6 +116,127 @@ function HeroBannerEditor({ value, onChange }: { value: HeroSlide[]; onChange: (
       >
         <Plus size={14} /> เพิ่มรูปแบนเนอร์
       </button>
+    </div>
+  );
+}
+
+// แถวรูปภาพใต้แถบสถิติ: 5 ภาพต่อแถว ถ้ามากกว่า 5 จะเลื่อนอัตโนมัติ
+function ImageStripEditor({ value, onChange }: { value: StripImage[]; onChange: (v: StripImage[]) => void }) {
+  const update = (i: number, v: StripImage) => onChange(value.map((s, j) => (j === i ? v : s)));
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...value];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]];
+    onChange(next);
+  };
+  return (
+    <div data-path="imageStrip" className="space-y-3">
+      <div>
+        <p className="text-sm font-bold text-dark">แถวรูปภาพใต้แถบสถิติ</p>
+        <p className="text-xs text-gray-400 mt-1">แสดง 5 ภาพต่อแถว (มือถือ 3 ภาพ) ถ้าใส่มากกว่า 5 ภาพจะเลื่อนอัตโนมัติ · แนะนำรูปสี่เหลี่ยมจัตุรัส · ไม่ใส่รูปเลย = ไม่แสดงส่วนนี้</p>
+      </div>
+      {value.map((s, i) => (
+        <HeroSlideEditor
+          key={i} index={i} total={value.length} value={s} allowEmpty
+          onChange={v => update(i, v)} onMove={d => move(i, d)}
+          onRemove={() => onChange(value.filter((_, j) => j !== i))}
+        />
+      ))}
+      <button
+        onClick={() => onChange([...value, { image: '', alt: '', link: '' }])}
+        className="flex items-center gap-1.5 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors"
+      >
+        <Plus size={14} /> เพิ่มรูป
+      </button>
+    </div>
+  );
+}
+
+const PRODUCT_IMG_BASE = 'https://res.cloudinary.com/dffqpiizc/image/upload/q_auto,f_auto,w_800/';
+type PickableProduct = BestSellerItem & { barcode: string };
+
+// ส่วน "ขายดีที่สุด": ตั้งชื่อหัวข้อเอง + เลือกสินค้าเอง (ไม่เลือกสินค้าเลย = ใช้ยอดขายจริงอัตโนมัติ)
+function BestSellersEditor({ value, onChange, onSessionExpired }: { value: BestSellersConfig; onChange: (v: BestSellersConfig) => void; onSessionExpired: () => void }) {
+  const [all, setAll] = useState<PickableProduct[] | null>(null);
+  const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const loadAll = async () => {
+    if (all || loading) return;
+    setLoading(true);
+    try {
+      const res = await adminFetch('/api/products');
+      if (res.ok) {
+        const data = await res.json();
+        setAll(data.map((p: any): PickableProduct => ({
+          id: String(p.id), name: p.name || '', category: p.category || '',
+          image: p.imageId ? `${PRODUCT_IMG_BASE}${p.imageId}.jpg` : (p.image || 'https://placehold.co/400x400?text=No+Image'),
+          wholesalePrice: Number(p.wholesalePrice) || 0, minWholesaleQty: Number(p.minWholesaleQty) || 1, unit: p.unit || 'ชิ้น',
+          barcode: String(p.barcode || ''),
+        })));
+      }
+    } catch (err) {
+      if (err instanceof AdminSessionExpiredError) onSessionExpired();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const picked = new Set(value.products.map(p => p.id));
+  const term = q.trim().toLowerCase();
+  const results = (all ?? []).filter(p => term && !picked.has(p.id) && (p.name.toLowerCase().includes(term) || p.barcode.toLowerCase().includes(term))).slice(0, 12);
+  const add = ({ barcode, ...item }: PickableProduct) => onChange({ ...value, products: [...value.products, item] });
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...value.products];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]];
+    onChange({ ...value, products: next });
+  };
+
+  return (
+    <div data-path="bestSellers" className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
+      <p className="text-sm font-bold text-dark">ส่วนสินค้าขายดี (หน้าแรก)</p>
+      <Field label="หัวข้อ" value={value.title} onChange={v => onChange({ ...value, title: v })} />
+      <Field label="คำอธิบายใต้หัวข้อ" value={value.subtitle} onChange={v => onChange({ ...value, subtitle: v })} />
+
+      <div>
+        <p className="text-xs font-bold text-gray-500 mb-2">สินค้าที่เลือก ({value.products.length}) — ไม่เลือกเลย = แสดงสินค้าขายดีอัตโนมัติจากยอดขายจริง</p>
+        <div className="space-y-2">
+          {value.products.map((p, i) => (
+            <div key={p.id} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 p-2">
+              <img src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover bg-gray-100 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-dark truncate">{p.name}</p>
+                <p className="text-xs text-gray-400">{p.category} · ราคาส่ง ฿{p.wholesalePrice.toLocaleString()}</p>
+              </div>
+              <button onClick={() => move(i, -1)} disabled={i === 0} title="เลื่อนขึ้น" className="p-1.5 text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowUp size={16} /></button>
+              <button onClick={() => move(i, 1)} disabled={i === value.products.length - 1} title="เลื่อนลง" className="p-1.5 text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowDown size={16} /></button>
+              <button onClick={() => onChange({ ...value, products: value.products.filter((_, j) => j !== i) })} title="เอาออก" className="p-1.5 text-gray-400 hover:text-red-500"><Trash2 size={16} /></button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative">
+        <input
+          value={q}
+          onFocus={loadAll}
+          onChange={e => { setQ(e.target.value); loadAll(); }}
+          placeholder="พิมพ์ชื่อสินค้าหรือรหัสบาร์โค้ดเพื่อค้นหาและเพิ่ม..."
+          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 font-medium text-sm"
+        />
+        {loading && <Loader2 size={16} className="animate-spin absolute right-3 top-3 text-gray-400" />}
+        {term && !loading && (
+          <div className="mt-2 bg-white rounded-xl border border-gray-100 max-h-72 overflow-y-auto divide-y divide-gray-50">
+            {results.length === 0 && <p className="p-3 text-xs text-gray-400">ไม่พบสินค้า</p>}
+            {results.map(p => (
+              <button key={p.id} onClick={() => add(p)} className="w-full flex items-center gap-3 p-2 text-left hover:bg-primary-50 transition-colors">
+                <img src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0" />
+                <span className="flex-1 min-w-0 text-sm font-medium text-dark truncate">{p.name}</span>
+                <Plus size={16} className="text-primary-500 shrink-0" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -215,6 +336,8 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
         <div className="space-y-6">
           <HeroBannerEditor value={home.heroBanners?.length ? home.heroBanners : [home.heroBanner]} onChange={heroBanners => setHome(h => ({ ...h, heroBanners }))} />
 
+          <ImageStripEditor value={home.imageStrip ?? []} onChange={imageStrip => setHome(h => ({ ...h, imageStrip }))} />
+
           <div>
             <p className="text-sm font-bold text-dark mb-2">แถบสถิติ 3 อัน</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -242,6 +365,12 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
               ))}
             </div>
           </div>
+
+          <BestSellersEditor
+            value={home.bestSellers ?? { title: 'ขายดีที่สุด ⭐', subtitle: 'สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล', products: [] }}
+            onChange={bestSellers => setHome(h => ({ ...h, bestSellers }))}
+            onSessionExpired={onSessionExpired}
+          />
 
           <div>
             <div className="flex items-center justify-between mb-2">

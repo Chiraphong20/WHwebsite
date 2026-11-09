@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import FloatingActionButton from './components/FloatingActionButton';
@@ -22,20 +22,16 @@ import Admin from './pages/Admin';
 // ไม่ต้องมี Navbar/Footer/ปุ่มลอยของหน้าร้าน — ทุก path บน subdomain นี้เข้าสู่หน้าแอดมินเหมือนกันหมด
 const isAdminSubdomain = typeof window !== 'undefined' && window.location.hostname.split('.')[0] === 'admin';
 
-export default function App() {
-  if (isAdminSubdomain) {
-    return (
-      <Router>
-        <Admin />
-      </Router>
-    );
+// หน้าแอดมิน (/admin) แยกออกมาเป็นหน้าจอของตัวเอง ไม่มี Navbar/Footer/ปุ่มลอยของหน้าร้าน
+function Shell() {
+  const { pathname } = useLocation();
+  if (isAdminSubdomain || pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return <Admin />;
   }
-
   return (
     <AuthProvider>
-      <Router>
-        <ScrollToTop />
-        <PreviewBridge />
+      <ScrollToTop />
+      <PreviewBridge />
       <div className="min-h-screen flex flex-col font-sans text-gray-900 selection:bg-primary-100 selection:text-primary-900">
         <Navbar />
         <main className="flex-grow">
@@ -48,13 +44,19 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/articles" element={<Articles />} />
             <Route path="/articles/:slug" element={<ArticleDetail />} />
-            <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
         <Footer />
         <FloatingActionButton />
       </div>
-    </Router>
     </AuthProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <Shell />
+    </Router>
   );
 }

@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
 import { HomeContent, DEFAULT_HOME_CONTENT, useSiteContent, getHeroSlides } from '../lib/siteContent';
 import HeroSlider from '../components/HeroSlider';
+import ImageStrip from '../components/ImageStrip';
 import { getFacebookEmbedUrl } from '../lib/facebook';
 
 
@@ -91,6 +92,13 @@ export default function Home() {
     fetchCategories();
   }, []);
 
+  // ส่วน "ขายดีที่สุด": ถ้าแอดมินเลือกสินค้าไว้ให้ใช้รายการนั้น ไม่งั้นใช้ยอดขายจริงจากระบบ
+  const bestCfg = content.bestSellers;
+  const customBest = (bestCfg?.products?.length ?? 0) > 0;
+  const shownBest: Product[] = customBest ? bestCfg!.products.map(p => ({ ...p, images: [] } as unknown as Product)) : bestSellers;
+  const bestTitle = bestCfg?.title?.trim() || 'ขายดีที่สุด ⭐';
+  const bestSubtitle = bestCfg ? bestCfg.subtitle : 'สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล';
+
   return (
     <div className="flex flex-col bg-gray-50 overflow-hidden">
       {/* Hero Section */}
@@ -125,6 +133,15 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* แถวรูปภาพ (แอดมินใส่เอง: 5 ภาพต่อแถว เกิน 5 เลื่อนอัตโนมัติ) */}
+      {(content.imageStrip ?? []).filter(i => i.image).length > 0 && (
+        <section className="pb-14 bg-white" data-edit="home_content:imageStrip">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ImageStrip images={(content.imageStrip ?? []).filter(i => i.image)} />
+          </div>
+        </section>
+      )}
 
       {/* Highlights Section */}
       <section className="py-24 bg-gray-50 relative">
@@ -228,15 +245,15 @@ export default function Home() {
       </section>
 
       {/* ===== Best Sellers (All-Time) Section ===== */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gray-50" data-edit="home_content:bestSellers">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-gray-100 pb-6 gap-4">
             <div>
               <div className="flex items-center space-x-2 mb-2">
                 <Star className="text-yellow-400 fill-yellow-400" size={26} />
-                <h2 className="text-3xl md:text-4xl font-bold text-dark">ขายดีที่สุด ⭐</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-dark">{bestTitle}</h2>
               </div>
-              <p className="text-lg text-gray-600">สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล</p>
+              <p className="text-lg text-gray-600">{bestSubtitle}</p>
             </div>
             <Link to="/products" className="group flex items-center space-x-2 text-primary-600 font-semibold hover:text-primary-700 bg-primary-50 px-5 py-2.5 rounded-full transition-colors">
               <span>ดูสินค้าทั้งหมด</span>
@@ -244,12 +261,12 @@ export default function Home() {
             </Link>
           </div>
 
-          {isLoading ? (
+          {isLoading && !customBest ? (
             <div className="w-full flex flex-col items-center justify-center py-16 space-y-4">
               <Loader2 className="animate-spin text-primary-500" size={44} />
               <p className="text-gray-500 font-medium">กำลังโหลดสินค้าสุดฮิต...</p>
             </div>
-          ) : bestSellers.length === 0 ? (
+          ) : shownBest.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <Star size={48} className="mx-auto mb-3 opacity-30" />
               <p className="font-medium">ยังไม่มีข้อมูลสินค้าขายดีในขณะนี้</p>
@@ -257,7 +274,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {bestSellers.map((product, index) => (
+              {shownBest.map((product, index) => (
                 <Link to="/products" key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:-translate-y-2">
                   <div className="aspect-square relative overflow-hidden bg-gray-50">
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" loading="lazy" />
