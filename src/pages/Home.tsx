@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Package, ShieldCheck, Star, Loader2, ShoppingCart, TrendingUp } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
-import { HomeContent, DEFAULT_HOME_CONTENT, useSiteContent } from '../lib/siteContent';
+import { HomeContent, DEFAULT_HOME_CONTENT, useSiteContent, getHeroSlides } from '../lib/siteContent';
+import HeroSlider from '../components/HeroSlider';
 import { getFacebookEmbedUrl } from '../lib/facebook';
 
 
@@ -94,20 +95,7 @@ export default function Home() {
     <div className="flex flex-col bg-gray-50 overflow-hidden">
       {/* Hero Section */}
       <section className="relative w-full pt-16 md:pt-20 bg-primary-50" data-edit="home_content:heroBanner">
-        {(() => {
-          const hero = content.heroBanner ?? DEFAULT_HOME_CONTENT.heroBanner;
-          const img = (
-            <img
-              src={hero.image || DEFAULT_HOME_CONTENT.heroBanner.image}
-              alt={hero.alt}
-              className="w-full h-auto object-cover sm:object-contain"
-              // @ts-ignore - fetchPriority is supported in modern browsers but may not be in current React types
-              fetchPriority="high"
-              loading="eager"
-            />
-          );
-          return hero.link ? <a href={hero.link} target={/^https?:/.test(hero.link) ? '_blank' : undefined} rel="noopener noreferrer">{img}</a> : img;
-        })()}
+        <HeroSlider slides={getHeroSlides(content)} />
       </section>
 
       {/* Marquee Ticker */}

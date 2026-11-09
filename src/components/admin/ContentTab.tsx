@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Save, Check, Plus, Trash2, Upload } from 'lucide-react';
+import { Loader2, Save, Check, Plus, Trash2, Upload, ArrowUp, ArrowDown } from 'lucide-react';
 import { adminFetch, AdminSessionExpiredError } from '../../lib/adminApi';
 import {
-  HomeContent, AboutContent, ContactContent,
+  HomeContent, HeroSlide, AboutContent, ContactContent,
   DEFAULT_HOME_CONTENT, DEFAULT_ABOUT_CONTENT, DEFAULT_CONTACT_CONTENT,
   fetchSiteContentMerged,
 } from '../../lib/siteContent';
@@ -35,8 +35,11 @@ function Field({ label, value, onChange, textarea, path }: { label: string; valu
   );
 }
 
-// แบนเนอร์ใหญ่บนสุดของหน้าแรก (Hero): เปลี่ยนรูป (อัปโหลดหรือวางลิงก์) · คำอธิบายรูป · ลิงก์เมื่อคลิก
-function HeroBannerEditor({ value, onChange }: { value: HomeContent['heroBanner']; onChange: (v: HomeContent['heroBanner']) => void }) {
+// สไลด์เดียวของแบนเนอร์: เปลี่ยนรูป (อัปโหลดหรือวางลิงก์) · คำอธิบายรูป · ลิงก์เมื่อคลิก
+function HeroSlideEditor({ index, total, value, onChange, onMove, onRemove }: {
+  index: number; total: number; value: HeroSlide;
+  onChange: (v: HeroSlide) => void; onMove: (dir: -1 | 1) => void; onRemove: () => void;
+}) {
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -55,8 +58,15 @@ function HeroBannerEditor({ value, onChange }: { value: HomeContent['heroBanner'
     }
   };
   return (
-    <div data-path="heroBanner" className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
-      <p className="text-sm font-bold text-dark">แบนเนอร์ใหญ่บนสุด (Hero)</p>
+    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-bold text-dark">รูปที่ {index + 1}</p>
+        <div className="flex items-center gap-1">
+          <button onClick={() => onMove(-1)} disabled={index === 0} title="เลื่อนขึ้น" className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowUp size={16} /></button>
+          <button onClick={() => onMove(1)} disabled={index === total - 1} title="เลื่อนลง" className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowDown size={16} /></button>
+          <button onClick={onRemove} disabled={total === 1} title="ลบรูปนี้" className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 disabled:opacity-30"><Trash2 size={16} /></button>
+        </div>
+      </div>
       <div className="rounded-xl overflow-hidden border border-dashed border-gray-200 bg-white">
         {value.image ? <img src={value.image} alt={value.alt} className="w-full max-h-56 object-contain" /> : <p className="p-8 text-center text-xs text-gray-300">ไม่มีรูป</p>}
       </div>
@@ -67,15 +77,45 @@ function HeroBannerEditor({ value, onChange }: { value: HomeContent['heroBanner'
           className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:border-primary-400 hover:text-primary-600 transition-colors"
         >
           {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-          {uploading ? 'กำลังอัปโหลด...' : 'เปลี่ยนรูปแบนเนอร์'}
+          {uploading ? 'กำลังอัปโหลด...' : 'เปลี่ยนรูป'}
         </button>
         <input ref={input} type="file" accept="image/*" onChange={onFile} className="hidden" />
-        <span className="text-xs text-gray-400">แนะนำรูปแนวนอน กว้างประมาณ 1920px (อัตราส่วนใกล้เคียง 16:9) ไฟล์ WebP/JPG ไม่ควรเกิน ~500KB</span>
       </div>
       {error && <p className="text-red-500 text-xs font-medium bg-red-50 px-3 py-2 rounded-xl">{error}</p>}
-      <Field label="ลิงก์รูปแบนเนอร์ (วางลิงก์เองได้)" value={value.image} onChange={v => onChange({ ...value, image: v })} />
+      <Field label="ลิงก์รูป (วางลิงก์เองได้)" value={value.image} onChange={v => onChange({ ...value, image: v })} />
       <Field label="คำอธิบายรูป (สำหรับผู้พิการทางสายตา/SEO)" value={value.alt} onChange={v => onChange({ ...value, alt: v })} />
-      <Field label="ลิงก์เมื่อคลิกแบนเนอร์ (เว้นว่าง = ไม่ลิงก์ไปไหน)" value={value.link} onChange={v => onChange({ ...value, link: v })} />
+      <Field label="ลิงก์เมื่อคลิก (เว้นว่าง = ไม่ลิงก์ไปไหน)" value={value.link} onChange={v => onChange({ ...value, link: v })} />
+    </div>
+  );
+}
+
+// แบนเนอร์ใหญ่บนสุดของหน้าแรก (Hero): ใส่ได้หลายรูป สไลด์อัตโนมัติทุก 5 วินาที
+function HeroBannerEditor({ value, onChange }: { value: HeroSlide[]; onChange: (v: HeroSlide[]) => void }) {
+  const update = (i: number, v: HeroSlide) => onChange(value.map((s, j) => (j === i ? v : s)));
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...value];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]];
+    onChange(next);
+  };
+  return (
+    <div data-path="heroBanner" className="space-y-3">
+      <div>
+        <p className="text-sm font-bold text-dark">แบนเนอร์ใหญ่บนสุด (Hero)</p>
+        <p className="text-xs text-gray-400 mt-1">ใส่ได้หลายรูป ถ้ามีมากกว่า 1 รูปจะสไลด์อัตโนมัติทุก 5 วินาที · แนะนำรูปแนวนอน กว้างประมาณ 1920px (อัตราส่วนใกล้เคียง 16:9) และควรใช้สัดส่วนเดียวกันทุกรูป ไฟล์ WebP/JPG ไม่ควรเกิน ~500KB</p>
+      </div>
+      {value.map((s, i) => (
+        <HeroSlideEditor
+          key={i} index={i} total={value.length} value={s}
+          onChange={v => update(i, v)} onMove={d => move(i, d)}
+          onRemove={() => onChange(value.filter((_, j) => j !== i))}
+        />
+      ))}
+      <button
+        onClick={() => onChange([...value, { image: '', alt: '', link: '' }])}
+        className="flex items-center gap-1.5 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors"
+      >
+        <Plus size={14} /> เพิ่มรูปแบนเนอร์
+      </button>
     </div>
   );
 }
@@ -173,7 +213,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
         </div>
 
         <div className="space-y-6">
-          <HeroBannerEditor value={home.heroBanner} onChange={heroBanner => setHome(h => ({ ...h, heroBanner }))} />
+          <HeroBannerEditor value={home.heroBanners?.length ? home.heroBanners : [home.heroBanner]} onChange={heroBanners => setHome(h => ({ ...h, heroBanners }))} />
 
           <div>
             <p className="text-sm font-bold text-dark mb-2">แถบสถิติ 3 อัน</p>

@@ -12,7 +12,17 @@ export interface HomeContent {
   highlightsSubtitle: string;
   highlights: { title: string; desc: string }[];
   reels: string[]; // ลิงก์ Facebook Reel เช่น https://www.facebook.com/reel/xxxxxxx/
-  heroBanner: { image: string; alt: string; link: string }; // แบนเนอร์ใหญ่บนสุดของหน้าแรก (link ว่าง = ไม่กดไปไหน)
+  heroBanner: HeroSlide; // แบนเนอร์เดิมรูปเดียว (ใช้เป็น fallback เมื่อยังไม่มี heroBanners)
+  heroBanners?: HeroSlide[]; // แบนเนอร์ใหญ่บนสุดของหน้าแรก หลายรูป สไลด์อัตโนมัติ (link ว่าง = ไม่กดไปไหน)
+}
+
+export interface HeroSlide { image: string; alt: string; link: string }
+
+// รายการสไลด์ที่จะแสดงจริง: ใช้ heroBanners ถ้ามี ไม่งั้นใช้ heroBanner เดิมรูปเดียว
+export function getHeroSlides(c: Partial<HomeContent>): HeroSlide[] {
+  const list = (c.heroBanners ?? []).filter(b => b && b.image);
+  if (list.length) return list;
+  return [c.heroBanner ?? DEFAULT_HOME_CONTENT.heroBanner];
 }
 
 export interface AboutContent {
