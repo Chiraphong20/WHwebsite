@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Facebook, MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { ShoppingBag, Facebook, MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react';
 import { ContactContent, DEFAULT_CONTACT_CONTENT, useSiteContent } from '../lib/siteContent';
 
 export default function Footer() {
@@ -99,6 +99,10 @@ export default function Footer() {
             <div className="flex items-center space-x-3 text-sm">
               <Mail size={17} className="text-primary-500 shrink-0" />
               <a href={`mailto:${contact.email}`} className="hover:text-white transition-colors break-all">{contact.email}</a>
+            </div>
+            <div className="flex items-center space-x-3 text-sm" data-edit="contact_content:lineOaLink">
+              <MessageCircle size={17} className="text-[#06C755] shrink-0" />
+              <a href={contact.lineOaLink} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LINE {contact.lineOaName}</a>
             </div>
             <div className="flex items-start space-x-3 text-sm">
               <Clock size={17} className="text-red-500 shrink-0 mt-0.5" />

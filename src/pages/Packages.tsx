@@ -5,12 +5,13 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { PackagesContent, DEFAULT_PACKAGES_CONTENT, useSiteContent } from '../lib/siteContent';
+import { PackagesContent, DEFAULT_PACKAGES_CONTENT, ContactContent, DEFAULT_CONTACT_CONTENT, useSiteContent } from '../lib/siteContent';
 
 const FEATURE_ICONS = [<Store size={28} />, <Palette size={28} />, <Unlock size={28} />, <Wallet size={28} />];
 
 export default function Packages() {
   const content = useSiteContent<PackagesContent>('packages_content', DEFAULT_PACKAGES_CONTENT);
+  const contact = useSiteContent<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT);
 
   return (
     <div className="pt-24 pb-20 min-h-screen bg-gray-50">
@@ -100,7 +101,7 @@ export default function Packages() {
                 </div>
 
                 <a
-                  href="https://line.me"
+                  href={contact.lineOaLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`w-full py-4 rounded-2xl font-bold text-center transition-all flex items-center justify-center space-x-2 ${

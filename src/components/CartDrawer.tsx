@@ -3,6 +3,7 @@ import { X, ShoppingCart, LogIn, Trash2, MessageCircle, ChevronRight, Store, Tru
 import { motion, AnimatePresence } from 'motion/react';
 import { Product } from '../data/mockData';
 import { useAuth } from '../contexts/AuthContext';
+import { ContactContent, DEFAULT_CONTACT_CONTENT, useSiteContent } from '../lib/siteContent';
 
 interface CartItem {
   product: Product;
@@ -28,7 +29,8 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
   const [orderNoteInput, setOrderNoteInput] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const LINE_OA_URL = 'https://lin.ee/7aOjZI9';
+  const contact = useSiteContent<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT);
+  const LINE_OA_URL = contact.lineOaLink;
   const LINE_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(LINE_OA_URL)}`;
 
   React.useEffect(() => {
@@ -357,7 +359,7 @@ export default function CartDrawer({ isOpen, onClose, items, onRemove, onQtyChan
 
               <div className="bg-gray-50 p-4 rounded-2xl mb-6 border border-gray-100 w-full flex flex-col items-center">
                 <img src={LINE_QR_URL} alt="LINE OA QR Code" className="w-32 h-32 rounded-xl mb-3 shadow-sm border border-gray-200" />
-                <p className="font-bold text-sm text-gray-700">@177eggfh</p>
+                <p className="font-bold text-sm text-gray-700">{contact.lineOaName}</p>
                 <p className="text-xs text-gray-500 mt-2 text-center">
                   📌 <span className="font-semibold">สั่งสินค้าโดยตรงกับแอดมิน</span><br />
                   <a href={LINE_OA_URL} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline inline-block mt-0.5">
