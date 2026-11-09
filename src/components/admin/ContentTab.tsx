@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Save, Check, Plus, Trash2, Upload, ArrowUp, ArrowDown } from 'lucide-react';
 import { adminFetch, AdminSessionExpiredError } from '../../lib/adminApi';
 import {
-  HomeContent, HeroSlide, StripImage, BestSellerItem, BestSellersConfig, AboutContent, ContactContent,
+  HomeContent, HeroSlide, getHomeSectionOrder, HOME_SECTION_LABELS, StripImage, BestSellerItem, BestSellersConfig, AboutContent, ContactContent,
   DEFAULT_HOME_CONTENT, DEFAULT_ABOUT_CONTENT, DEFAULT_CONTACT_CONTENT,
   fetchSiteContentMerged,
 } from '../../lib/siteContent';
@@ -128,6 +128,24 @@ function ImageStripEditor({ value, onChange }: { value: StripImage[]; onChange: 
     [next[i], next[i + dir]] = [next[i + dir], next[i]];
     onChange(next);
   };
+  // เลือกหลายไฟล์พร้อมกัน → อัปโหลดทั้งหมดแล้วต่อท้ายรายการตามลำดับที่เลือก
+  const multi = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const onFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploading(true);
+    setError('');
+    const results = await Promise.allSettled(files.map(f => uploadToCloudinary(f, 'wh_strip')));
+    const added: StripImage[] = [];
+    let failed = 0;
+    results.forEach(r => (r.status === 'fulfilled' ? added.push({ image: r.value, alt: '', link: '' }) : failed++));
+    if (added.length) onChange([...value, ...added]);
+    if (failed) setError(`อัปโหลดไม่สำเร็จ ${failed} จาก ${files.length} ไฟล์`);
+    setUploading(false);
+    if (multi.current) multi.current.value = '';
+  };
   return (
     <div data-path="imageStrip" className="space-y-3">
       <div>
@@ -141,12 +159,24 @@ function ImageStripEditor({ value, onChange }: { value: StripImage[]; onChange: 
           onRemove={() => onChange(value.filter((_, j) => j !== i))}
         />
       ))}
-      <button
-        onClick={() => onChange([...value, { image: '', alt: '', link: '' }])}
-        className="flex items-center gap-1.5 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors"
-      >
-        <Plus size={14} /> เพิ่มรูป
-      </button>
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          onClick={() => multi.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-1.5 px-4 py-2 bg-primary-500 text-white rounded-lg text-xs font-bold hover:bg-primary-600 disabled:opacity-60 transition-colors"
+        >
+          {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+          {uploading ? 'กำลังอัปโหลด...' : 'อัปโหลดหลายรูปพร้อมกัน'}
+        </button>
+        <input ref={multi} type="file" accept="image/*" multiple onChange={onFiles} className="hidden" />
+        <button
+          onClick={() => onChange([...value, { image: '', alt: '', link: '' }])}
+          className="flex items-center gap-1.5 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors"
+        >
+          <Plus size={14} /> เพิ่มช่องวางลิงก์
+        </button>
+      </div>
+      {error && <p className="text-red-500 text-xs font-medium bg-red-50 px-3 py-2 rounded-xl">{error}</p>}
     </div>
   );
 }
@@ -241,6 +271,34 @@ function BestSellersEditor({ value, onChange, onSessionExpired }: { value: BestS
   );
 }
 
+// สลับลำดับหัวข้อในหน้าแรก (ใต้แบนเนอร์ Hero และแถบหมวดหมู่): กดลูกศรขึ้น/ลง
+function SectionOrderEditor({ value, onChange }: { value: HomeContent; onChange: (order: string[]) => void }) {
+  const order = getHomeSectionOrder(value);
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...order];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]];
+    onChange(next);
+  };
+  return (
+    <div data-path="sectionOrder" className="space-y-3">
+      <div>
+        <p className="text-sm font-bold text-dark">ลำดับหัวข้อในหน้าแรก</p>
+        <p className="text-xs text-gray-400 mt-1">กดลูกศรเพื่อสลับตำแหน่ง · แบนเนอร์ใหญ่และแถบหมวดหมู่อยู่บนสุดเสมอ ส่วนท้ายหน้า "พร้อมจะเป็นเจ้าของร้าน 20 บาทหรือยัง?" คงที่ · พื้นหลังขาว/เทาจะสลับให้อัตโนมัติตามลำดับ</p>
+      </div>
+      <div className="space-y-2">
+        {order.map((id, i) => (
+          <div key={id} className="flex items-center gap-3 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3">
+            <span className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 text-xs font-extrabold flex items-center justify-center shrink-0">{i + 1}</span>
+            <span className="flex-1 text-sm font-bold text-dark">{HOME_SECTION_LABELS[id]}</span>
+            <button onClick={() => move(i, -1)} disabled={i === 0} title="เลื่อนขึ้น" className="p-1.5 text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowUp size={18} /></button>
+            <button onClick={() => move(i, 1)} disabled={i === order.length - 1} title="เลื่อนลง" className="p-1.5 text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowDown size={18} /></button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
   return (
     <button
@@ -256,7 +314,41 @@ function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolea
   );
 }
 
-export default function ContentTab({ onSessionExpired }: { onSessionExpired: () => void }) {
+type Page = 'order' | 'banner' | 'strip' | 'stats' | 'highlights' | 'best' | 'reels' | 'about' | 'contact';
+type Group = 'home' | 'about' | 'contact';
+
+const GROUPS: { key: Group; label: string; first: Page }[] = [
+  { key: 'home', label: 'หน้าแรก', first: 'order' },
+  { key: 'about', label: 'เกี่ยวกับเรา', first: 'about' },
+  { key: 'contact', label: 'ข้อมูลติดต่อ', first: 'contact' },
+];
+const HOME_PAGES: { key: Page; label: string }[] = [
+  { key: 'order', label: 'ลำดับหัวข้อ' },
+  { key: 'banner', label: 'แบนเนอร์ใหญ่' },
+  { key: 'strip', label: 'แถวรูปภาพ' },
+  { key: 'stats', label: 'แถบสถิติ' },
+  { key: 'highlights', label: 'จุดเด่น' },
+  { key: 'best', label: 'สินค้าขายดี' },
+  { key: 'reels', label: 'คลิป Reels' },
+];
+const groupOf = (p: Page): Group => (p === 'about' ? 'about' : p === 'contact' ? 'contact' : 'home');
+
+// คลิกส่วนใดของเว็บในตัวอย่าง → เลือกหน้าย่อยที่มีฟอร์มนั้น
+function pageFromFocus(key: string, path: string): Page | null {
+  if (key === 'about_content') return 'about';
+  if (key === 'contact_content') return 'contact';
+  if (key !== 'home_content') return null;
+  const g = path.split('.')[0];
+  if (g === 'heroBanner') return 'banner';
+  if (g === 'imageStrip') return 'strip';
+  if (g === 'stats') return 'stats';
+  if (g === 'bestSellers') return 'best';
+  if (g === 'reels') return 'reels';
+  if (g.startsWith('highlights')) return 'highlights';
+  return null;
+}
+
+export default function ContentTab({ onSessionExpired, focus }: { onSessionExpired: () => void; focus?: { key: string; path: string; tick: number } | null }) {
   const [loading, setLoading] = useState(true);
   const [home, setHome] = useState<HomeContent>(DEFAULT_HOME_CONTENT);
   const [about, setAbout] = useState<AboutContent>(DEFAULT_ABOUT_CONTENT);
@@ -264,6 +356,8 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
   const markHome = usePushDraft('home_content', home, !loading);
   const markAbout = usePushDraft('about_content', about, !loading);
   const markContact = usePushDraft('contact_content', contact, !loading);
+  const [page, setPage] = useState<Page>('order');
+  const baseline = useRef({ home: '', about: '', contact: '' }); // ค่าที่บันทึกล่าสุด ไว้เทียบว่ามีอะไรยังไม่ได้บันทึก
 
   useEffect(() => {
     (async () => {
@@ -272,6 +366,7 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
         fetchSiteContentMerged<AboutContent>('about_content', DEFAULT_ABOUT_CONTENT),
         fetchSiteContentMerged<ContactContent>('contact_content', DEFAULT_CONTACT_CONTENT),
       ]);
+      baseline.current = { home: JSON.stringify(h), about: JSON.stringify(a), contact: JSON.stringify(c) };
       setHome(h);
       setAbout(a);
       setContact(c);
@@ -279,41 +374,49 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
     })();
   }, []);
 
-  const save = async (key: SectionKey, value: unknown, onDone: () => void) => {
+  useEffect(() => {
+    if (!focus) return;
+    const p = pageFromFocus(focus.key, focus.path);
+    if (p) setPage(p);
+  }, [focus]);
+
+  const dirty = {
+    home: JSON.stringify(home) !== baseline.current.home,
+    about: JSON.stringify(about) !== baseline.current.about,
+    contact: JSON.stringify(contact) !== baseline.current.contact,
+  };
+  const anyDirty = dirty.home || dirty.about || dirty.contact;
+
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  // บันทึกทุกส่วนที่แก้ไขในปุ่มเดียว
+  const saveAll = async () => {
+    setSaving(true); setSaved(false); setSaveError('');
+    const jobs: { key: SectionKey; field: 'home' | 'about' | 'contact'; value: unknown; mark: () => void }[] = [];
+    if (dirty.home) jobs.push({ key: 'home_content', field: 'home', value: home, mark: () => markHome(home) });
+    if (dirty.about) jobs.push({ key: 'about_content', field: 'about', value: about, mark: () => markAbout(about) });
+    if (dirty.contact) jobs.push({ key: 'contact_content', field: 'contact', value: contact, mark: () => markContact(contact) });
     try {
-      const res = await adminFetch(`/api/settings/${key}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(value),
-      });
-      if (res.ok) onDone();
+      for (const j of jobs) {
+        const res = await adminFetch(`/api/settings/${j.key}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(j.value),
+        });
+        if (!res.ok) throw new Error('save failed');
+        baseline.current[j.field] = JSON.stringify(j.value);
+        j.mark();
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       if (err instanceof AdminSessionExpiredError) onSessionExpired();
+      else setSaveError('บันทึกไม่สำเร็จ กรุณาลองใหม่');
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const [savingHome, setSavingHome] = useState(false);
-  const [savedHome, setSavedHome] = useState(false);
-  const saveHome = async () => {
-    setSavingHome(true); setSavedHome(false);
-    await save('home_content', home, () => { markHome(home); setSavedHome(true); setTimeout(() => setSavedHome(false), 1500); });
-    setSavingHome(false);
-  };
-
-  const [savingAbout, setSavingAbout] = useState(false);
-  const [savedAbout, setSavedAbout] = useState(false);
-  const saveAbout = async () => {
-    setSavingAbout(true); setSavedAbout(false);
-    await save('about_content', about, () => { markAbout(about); setSavedAbout(true); setTimeout(() => setSavedAbout(false), 1500); });
-    setSavingAbout(false);
-  };
-
-  const [savingContact, setSavingContact] = useState(false);
-  const [savedContact, setSavedContact] = useState(false);
-  const saveContact = async () => {
-    setSavingContact(true); setSavedContact(false);
-    await save('contact_content', contact, () => { markContact(contact); setSavedContact(true); setTimeout(() => setSavedContact(false), 1500); });
-    setSavingContact(false);
   };
 
   if (loading) {
@@ -324,106 +427,149 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
     );
   }
 
+  const group = groupOf(page);
+  const pill = (active: boolean) =>
+    `px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${active ? 'bg-primary-500 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:border-primary-300 hover:text-primary-600'}`;
+
   return (
-    <div className="space-y-8">
-      {/* หน้าแรก */}
-      <section data-focus-key="home_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-extrabold text-dark">หน้าแรก — สถิติและจุดเด่น</h2>
-          <SaveButton saving={savingHome} saved={savedHome} onClick={saveHome} />
+    <div className="space-y-5">
+      {/* แถบบนสุด: เลือกส่วน + ปุ่มบันทึกปุ่มเดียว */}
+      <div className="sticky top-0 z-20 pt-2 pb-3 bg-gray-50/95 backdrop-blur space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0 flex gap-2 overflow-x-auto">
+            {GROUPS.map(g => (
+              <button key={g.key} onClick={() => setPage(g.first)} className={pill(group === g.key)}>{g.label}</button>
+            ))}
+          </div>
+          <div className="shrink-0 flex items-center gap-3">
+            {saveError ? (
+              <span className="hidden sm:inline text-xs font-bold text-red-500">{saveError}</span>
+            ) : anyDirty && !saving ? (
+              <span className="hidden sm:inline text-xs font-bold text-amber-600">มีการแก้ไขที่ยังไม่บันทึก</span>
+            ) : null}
+            <SaveButton saving={saving} saved={saved} onClick={saveAll} />
+          </div>
         </div>
-
-        <div className="space-y-6">
-          <HeroBannerEditor value={home.heroBanners?.length ? home.heroBanners : [home.heroBanner]} onChange={heroBanners => setHome(h => ({ ...h, heroBanners }))} />
-
-          <ImageStripEditor value={home.imageStrip ?? []} onChange={imageStrip => setHome(h => ({ ...h, imageStrip }))} />
-
-          <div>
-            <p className="text-sm font-bold text-dark mb-2">แถบสถิติ 3 อัน</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {home.stats.map((s, i) => (
-                <div key={i} data-path={`stats.${i}`} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
-                  <Field label="ตัวเลข" value={s.number} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, number: v } : x) }))} />
-                  <Field label="หัวข้อ" value={s.label} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, label: v } : x) }))} />
-                  <Field label="คำอธิบาย" value={s.desc} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, desc: v } : x) }))} />
-                </div>
-              ))}
-            </div>
+        {group === 'home' && (
+          <div className="flex gap-2 overflow-x-auto">
+            {HOME_PAGES.map(h => (
+              <button key={h.key} onClick={() => setPage(h.key)} className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${page === h.key ? 'bg-primary-50 text-primary-600 ring-1 ring-primary-200' : 'text-gray-500 hover:bg-white'}`}>{h.label}</button>
+            ))}
           </div>
+        )}
+      </div>
 
-          <Field path="highlightsTitle" label="หัวข้อจุดเด่น" value={home.highlightsTitle} onChange={v => setHome(h => ({ ...h, highlightsTitle: v }))} />
-          <Field path="highlightsSubtitle" label="คำอธิบายจุดเด่น" value={home.highlightsSubtitle} onChange={v => setHome(h => ({ ...h, highlightsSubtitle: v }))} textarea />
-
-          <div>
-            <p className="text-sm font-bold text-dark mb-2">การ์ดจุดเด่น 3 อัน</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {home.highlights.map((s, i) => (
-                <div key={i} data-path={`highlights.${i}`} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
-                  <Field label="หัวข้อ" value={s.title} onChange={v => setHome(h => ({ ...h, highlights: h.highlights.map((x, xi) => xi === i ? { ...x, title: v } : x) }))} />
-                  <Field label="คำอธิบาย" value={s.desc} onChange={v => setHome(h => ({ ...h, highlights: h.highlights.map((x, xi) => xi === i ? { ...x, desc: v } : x) }))} textarea />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <BestSellersEditor
-            value={home.bestSellers ?? { title: 'ขายดีที่สุด ⭐', subtitle: 'สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล', products: [] }}
-            onChange={bestSellers => setHome(h => ({ ...h, bestSellers }))}
-            onSessionExpired={onSessionExpired}
-          />
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-bold text-dark">คลิป Facebook Reels (ดูบรรยากาศร้านค้าจริง)</p>
-              <button
-                onClick={() => setHome(h => ({ ...h, reels: [...h.reels, ''] }))}
-                className="flex items-center gap-1.5 text-xs font-bold text-primary-600 hover:text-primary-700 transition-colors"
-              >
-                <Plus size={14} /> เพิ่มคลิป
-              </button>
-            </div>
-            <p className="text-xs text-gray-400 mb-3">วางลิงก์ Facebook Reel เช่น https://www.facebook.com/reel/xxxxxxx/</p>
-            <div className="space-y-3">
-              {home.reels.length === 0 && (
-                <p className="text-sm text-gray-400 italic">ยังไม่มีคลิป — กด "เพิ่มคลิป" เพื่อเริ่ม</p>
-              )}
-              {home.reels.map((url, i) => {
-                const preview = getFacebookEmbedUrl(url);
-                return (
-                  <div key={i} data-path={`reels.${i}`} className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3">
-                    <div className="flex-1 space-y-2">
-                      <input
-                        type="text"
-                        value={url}
-                        onChange={e => setHome(h => ({ ...h, reels: h.reels.map((x, xi) => xi === i ? e.target.value : x) }))}
-                        placeholder="https://www.facebook.com/reel/..."
-                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 font-medium text-sm"
-                      />
-                      {url && !preview && (
-                        <p className="text-xs text-amber-600">ลิงก์นี้ยังใช้งานไม่ได้ ตรวจสอบรูปแบบอีกครั้ง</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => setHome(h => ({ ...h, reels: h.reels.filter((_, xi) => xi !== i) }))}
-                      className="p-2.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+      {group === 'home' && (
+        <section data-focus-key="home_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="space-y-6">
+          {page === 'order' && (
+            <SectionOrderEditor value={home} onChange={sectionOrder => setHome(h => ({ ...h, sectionOrder }))} />
+          )}
+          {page === 'banner' && (
+            <>
+            <HeroBannerEditor value={home.heroBanners?.length ? home.heroBanners : [home.heroBanner]} onChange={heroBanners => setHome(h => ({ ...h, heroBanners }))} />
+            </>
+          )}
+          {page === 'strip' && (
+            <>
+            <ImageStripEditor value={home.imageStrip ?? []} onChange={imageStrip => setHome(h => ({ ...h, imageStrip }))} />
+            </>
+          )}
+          {page === 'stats' && (
+            <>
+            <div>
+              <p className="text-sm font-bold text-dark mb-2">แถบสถิติ 3 อัน</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {home.stats.map((s, i) => (
+                  <div key={i} data-path={`stats.${i}`} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
+                    <Field label="ตัวเลข" value={s.number} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, number: v } : x) }))} />
+                    <Field label="หัวข้อ" value={s.label} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, label: v } : x) }))} />
+                    <Field label="คำอธิบาย" value={s.desc} onChange={v => setHome(h => ({ ...h, stats: h.stats.map((x, xi) => xi === i ? { ...x, desc: v } : x) }))} />
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
+            </>
+          )}
+          {page === 'highlights' && (
+            <>
+            <Field path="highlightsTitle" label="หัวข้อจุดเด่น" value={home.highlightsTitle} onChange={v => setHome(h => ({ ...h, highlightsTitle: v }))} />
+            <Field path="highlightsSubtitle" label="คำอธิบายจุดเด่น" value={home.highlightsSubtitle} onChange={v => setHome(h => ({ ...h, highlightsSubtitle: v }))} textarea />
+
+            <div>
+              <p className="text-sm font-bold text-dark mb-2">การ์ดจุดเด่น 3 อัน</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {home.highlights.map((s, i) => (
+                  <div key={i} data-path={`highlights.${i}`} className="p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-100">
+                    <Field label="หัวข้อ" value={s.title} onChange={v => setHome(h => ({ ...h, highlights: h.highlights.map((x, xi) => xi === i ? { ...x, title: v } : x) }))} />
+                    <Field label="คำอธิบาย" value={s.desc} onChange={v => setHome(h => ({ ...h, highlights: h.highlights.map((x, xi) => xi === i ? { ...x, desc: v } : x) }))} textarea />
+                  </div>
+                ))}
+              </div>
+            </div>
+            </>
+          )}
+          {page === 'best' && (
+            <>
+            <BestSellersEditor
+              value={home.bestSellers ?? { title: 'ขายดีที่สุด ⭐', subtitle: 'สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล', products: [] }}
+              onChange={bestSellers => setHome(h => ({ ...h, bestSellers }))}
+              onSessionExpired={onSessionExpired}
+            />
+            </>
+          )}
+          {page === 'reels' && (
+            <>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-bold text-dark">คลิป Facebook Reels (ดูบรรยากาศร้านค้าจริง)</p>
+                <button
+                  onClick={() => setHome(h => ({ ...h, reels: [...h.reels, ''] }))}
+                  className="flex items-center gap-1.5 text-xs font-bold text-primary-600 hover:text-primary-700 transition-colors"
+                >
+                  <Plus size={14} /> เพิ่มคลิป
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mb-3">วางลิงก์ Facebook Reel เช่น https://www.facebook.com/reel/xxxxxxx/</p>
+              <div className="space-y-3">
+                {home.reels.length === 0 && (
+                  <p className="text-sm text-gray-400 italic">ยังไม่มีคลิป — กด "เพิ่มคลิป" เพื่อเริ่ม</p>
+                )}
+                {home.reels.map((url, i) => {
+                  const preview = getFacebookEmbedUrl(url);
+                  return (
+                    <div key={i} data-path={`reels.${i}`} className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3">
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="text"
+                          value={url}
+                          onChange={e => setHome(h => ({ ...h, reels: h.reels.map((x, xi) => xi === i ? e.target.value : x) }))}
+                          placeholder="https://www.facebook.com/reel/..."
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 font-medium text-sm"
+                        />
+                        {url && !preview && (
+                          <p className="text-xs text-amber-600">ลิงก์นี้ยังใช้งานไม่ได้ ตรวจสอบรูปแบบอีกครั้ง</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setHome(h => ({ ...h, reels: h.reels.filter((_, xi) => xi !== i) }))}
+                        className="p-2.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            </>
+          )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* เกี่ยวกับเรา */}
-      <section data-focus-key="about_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-extrabold text-dark">เกี่ยวกับเรา</h2>
-          <SaveButton saving={savingAbout} saved={savedAbout} onClick={saveAbout} />
-        </div>
-
+      {page === 'about' && (
+        <section data-focus-key="about_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field path="heroTitleLine1" label="หัวข้อบรรทัดแรก" value={about.heroTitleLine1} onChange={v => setAbout(a => ({ ...a, heroTitleLine1: v }))} />
@@ -458,15 +604,11 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      )}
 
-      {/* ติดต่อเรา */}
-      <section data-focus-key="contact_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-extrabold text-dark">ข้อมูลติดต่อ</h2>
-          <SaveButton saving={savingContact} saved={savedContact} onClick={saveContact} />
-        </div>
-
+      {page === 'contact' && (
+        <section data-focus-key="contact_content" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field path="phone" label="เบอร์โทรศัพท์" value={contact.phone} onChange={v => setContact(c => ({ ...c, phone: v }))} />
           <Field path="email" label="อีเมล" value={contact.email} onChange={v => setContact(c => ({ ...c, email: v }))} />
@@ -480,7 +622,8 @@ export default function ContentTab({ onSessionExpired }: { onSessionExpired: () 
         <div className="mt-4">
           <Field path="address" label="ที่อยู่" value={contact.address} onChange={v => setContact(c => ({ ...c, address: v }))} textarea />
         </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

@@ -242,7 +242,7 @@ export default function Admin() {
         <div className={`mx-auto px-4 sm:px-6 lg:px-8 pt-6 ${showPreview ? 'max-w-none flex gap-6 items-start' : 'max-w-7xl'}`}>
           <div className={showPreview ? 'flex-1 min-w-0' : ''}>
             {activeTab === 'products' && <ProductsTab onSessionExpired={handleSessionExpired} />}
-            {activeTab === 'content' && <ContentTab onSessionExpired={handleSessionExpired} />}
+            {activeTab === 'content' && <ContentTab onSessionExpired={handleSessionExpired} focus={focusReq} />}
             {activeTab === 'packages' && <PackagesTab onSessionExpired={handleSessionExpired} />}
             {activeTab === 'articles' && <ArticlesTab onSessionExpired={handleSessionExpired} />}
           </div>

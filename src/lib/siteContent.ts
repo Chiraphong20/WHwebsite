@@ -13,9 +13,28 @@ export interface HomeContent {
   highlights: { title: string; desc: string }[];
   reels: string[]; // ลิงก์ Facebook Reel เช่น https://www.facebook.com/reel/xxxxxxx/
   heroBanner: HeroSlide; // แบนเนอร์เดิมรูปเดียว (ใช้เป็น fallback เมื่อยังไม่มี heroBanners)
+  sectionOrder?: string[]; // ลำดับหัวข้อในหน้าแรก (ดู HOME_SECTION_IDS)
   imageStrip?: StripImage[]; // แถวรูปภาพใต้แถบสถิติ แสดง 5 ภาพต่อแถว เกิน 5 เลื่อนอัตโนมัติ
   bestSellers?: BestSellersConfig; // ส่วนสินค้าขายดี: ตั้งหัวข้อและเลือกสินค้าเอง (ไม่มีสินค้า = ใช้ยอดขายจริงอัตโนมัติ)
   heroBanners?: HeroSlide[]; // แบนเนอร์ใหญ่บนสุดของหน้าแรก หลายรูป สไลด์อัตโนมัติ (link ว่าง = ไม่กดไปไหน)
+}
+
+// หัวข้อ (ส่วน) ในหน้าแรกที่สลับลำดับได้ — Hero แบนเนอร์/แถบหมวดหมู่อยู่บนสุดและ CTA ท้ายหน้าคงที่
+export const HOME_SECTION_IDS = ['strip', 'stats', 'highlights', 'trending', 'best', 'reels'] as const;
+export type HomeSectionId = (typeof HOME_SECTION_IDS)[number];
+export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
+  strip: 'แถวรูปภาพ',
+  stats: 'แถบสถิติ (10+ ปี / 4 สาขา / 1,500+)',
+  highlights: 'จุดเด่น (ทำไมลูกค้าถึงเลือกเรา)',
+  trending: 'สินค้ามาแรง',
+  best: 'สินค้าขายดี',
+  reels: 'คลิป Facebook Reels',
+};
+
+// ลำดับที่ใช้จริง: ตามที่แอดมินตั้ง (ตัดค่าที่ไม่รู้จัก) แล้วต่อด้วยหัวข้อที่ยังไม่ได้ระบุตามลำดับเดิม
+export function getHomeSectionOrder(c: Partial<HomeContent>): HomeSectionId[] {
+  const valid = (c.sectionOrder ?? []).filter((id, i, a): id is HomeSectionId => (HOME_SECTION_IDS as readonly string[]).includes(id) && a.indexOf(id) === i);
+  return [...valid, ...HOME_SECTION_IDS.filter(id => !valid.includes(id))];
 }
 
 export interface StripImage { image: string; alt: string; link: string }

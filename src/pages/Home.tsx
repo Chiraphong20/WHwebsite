@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Package, ShieldCheck, Star, Loader2, ShoppingCart, TrendingUp } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
-import { HomeContent, DEFAULT_HOME_CONTENT, useSiteContent, getHeroSlides } from '../lib/siteContent';
+import { HomeContent, DEFAULT_HOME_CONTENT, useSiteContent, getHeroSlides, getHomeSectionOrder, HomeSectionId } from '../lib/siteContent';
 import HeroSlider from '../components/HeroSlider';
 import ImageStrip from '../components/ImageStrip';
 import { getFacebookEmbedUrl } from '../lib/facebook';
@@ -99,26 +99,9 @@ export default function Home() {
   const bestTitle = bestCfg?.title?.trim() || 'ขายดีที่สุด ⭐';
   const bestSubtitle = bestCfg ? bestCfg.subtitle : 'สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล';
 
-  return (
-    <div className="flex flex-col bg-gray-50 overflow-hidden">
-      {/* Hero Section */}
-      <section className="relative w-full pt-16 md:pt-20 bg-primary-50" data-edit="home_content:heroBanner">
-        <HeroSlider slides={getHeroSlides(content)} />
-      </section>
-
-      {/* Marquee Ticker */}
-      <div className="bg-primary-500 py-4 overflow-hidden border-y border-primary-600/50">
-        <div className="flex w-max animate-marquee space-x-12 px-6">
-          {/* Duplicate the array exactly twice. The animation moves -50%, which equals exactly one full set. */}
-          {[...categories, ...categories].map((category, index) => (
-            <span key={index} className="text-white/90 font-semibold text-lg flex items-center shrink-0">
-              <span className="w-2.5 h-2.5 rounded-full bg-accent mr-4 shadow-sm"></span>
-              <span className="tracking-wide shadow-sm">{category}</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
+  const blocks: Record<HomeSectionId, React.ReactNode> = {
+    stats: (
+      <>
       {/* Info Stats Section */}
       <section className="py-16 bg-white relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -133,16 +116,20 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+      </>
+    ),
+    strip: (
+      <>
       {/* แถวรูปภาพ (แอดมินใส่เอง: 5 ภาพต่อแถว เกิน 5 เลื่อนอัตโนมัติ) */}
-      {(content.imageStrip ?? []).filter(i => i.image).length > 0 && (
-        <section className="pb-14 bg-white" data-edit="home_content:imageStrip">
+              <section className="py-10 bg-white" data-edit="home_content:imageStrip">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ImageStrip images={(content.imageStrip ?? []).filter(i => i.image)} />
           </div>
         </section>
-      )}
-
+      </>
+    ),
+    highlights: (
+      <>
       {/* Highlights Section */}
       <section className="py-24 bg-gray-50 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -169,7 +156,10 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+      </>
+    ),
+    trending: (
+      <>
       {/* ===== Trending Section ===== */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -243,7 +233,10 @@ export default function Home() {
           )}
         </div>
       </section>
-
+      </>
+    ),
+    best: (
+      <>
       {/* ===== Best Sellers (All-Time) Section ===== */}
       <section className="py-20 bg-gray-50" data-edit="home_content:bestSellers">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -317,7 +310,10 @@ export default function Home() {
           )}
         </div>
       </section>
-
+      </>
+    ),
+    reels: (
+      <>
       {/* Facebook Reels Section */}
       <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -360,6 +356,38 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </>
+    ),
+  };
+  const hasStrip = (content.imageStrip ?? []).some(i => i.image);
+  const order = getHomeSectionOrder(content).filter(id => id !== 'strip' || hasStrip);
+
+  return (
+    <div className="flex flex-col bg-gray-50 overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative w-full pt-16 md:pt-20 bg-primary-50" data-edit="home_content:heroBanner">
+        <HeroSlider slides={getHeroSlides(content)} />
+      </section>
+
+      {/* Marquee Ticker */}
+      <div className="bg-primary-500 py-4 overflow-hidden border-y border-primary-600/50">
+        <div className="flex w-max animate-marquee space-x-12 px-6">
+          {/* Duplicate the array exactly twice. The animation moves -50%, which equals exactly one full set. */}
+          {[...categories, ...categories].map((category, index) => (
+            <span key={index} className="text-white/90 font-semibold text-lg flex items-center shrink-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-accent mr-4 shadow-sm"></span>
+              <span className="tracking-wide shadow-sm">{category}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* หัวข้อที่สลับลำดับได้ (ตั้งจากหลังบ้าน) — สลับพื้นหลังขาว/เทาทีละส่วนให้อ่านง่ายเสมอ */}
+      {order.map((id, idx) => (
+        <div key={id} className={idx % 2 === 0 ? '[&>section]:bg-white!' : '[&>section]:bg-gray-50!'}>
+          {blocks[id]}
+        </div>
+      ))}
 
       {/* CTA Section */}
       <section className="py-24 relative overflow-hidden">
