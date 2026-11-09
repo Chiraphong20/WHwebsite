@@ -25,7 +25,6 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
 
 export default function Admin() {
   // เปิดผ่าน admin.* จะไม่มี Navbar หน้าร้าน (ดู App.tsx) — แถบเมนูแอดมินชิดบนสุดได้เลย
-  const bare = true; // แอดมินเป็นหน้าจอแยก ไม่มี Navbar หน้าร้านทั้งบน admin.* และ /admin
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!getToken());
   const [user, setUser] = useState<AdminUser | null>(() => getStoredUser());
   const [activeTab, setActiveTab] = useState<Tab>('products');
@@ -180,72 +179,81 @@ export default function Admin() {
     );
   }
 
-  // --- Admin dashboard ---
+  // --- Admin dashboard: เมนูอยู่แถบด้านข้าง (มือถือ/จอแคบ = แถบแนวนอนด้านบน) ---
   return (
     <PreviewContext.Provider value={{ pushDraft }}>
-    <div className={`min-h-screen bg-gray-50 pb-20 ${bare ? '' : 'pt-28'}`}>
-      {/* แถบเมนูด้านบน: ชื่อ + แท็บ + ปุ่มด้านขวา (เดิมมีช่องว่างด้านบนเผื่อ Navbar ของหน้าร้าน ซึ่งหน้า admin.* ไม่มี) */}
-      <header className={`sticky z-30 bg-white/95 backdrop-blur border-b border-gray-200 ${bare ? 'top-0' : 'top-24'}`}>
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-4 sm:gap-6">
-          <div className="shrink-0 leading-tight">
+    <div className="min-h-screen bg-gray-50 lg:flex">
+      <aside className="lg:sticky lg:top-0 lg:h-screen lg:w-60 shrink-0 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col z-30">
+        <div className="px-4 sm:px-6 lg:px-5 h-16 lg:h-auto lg:py-6 flex items-center justify-between lg:block lg:border-b lg:border-gray-100">
+          <div className="leading-tight">
             <h1 className="text-lg font-extrabold text-dark">Admin Panel</h1>
             <p className="text-gray-500 text-xs hidden sm:block">
               {user ? `เข้าสู่ระบบเป็น ${user.name || user.username}` : 'วงษ์หิรัญ ค้าส่ง'}
             </p>
           </div>
-          <nav className="flex-1 min-w-0 h-full flex items-stretch gap-1 overflow-x-auto" aria-label="เมนูแอดมิน">
-            {TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                aria-current={activeTab === tab.key ? 'page' : undefined}
-                className={`flex items-center gap-2 px-4 font-bold text-sm border-b-2 whitespace-nowrap transition-colors ${
-                  activeTab === tab.key
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-          <div className="shrink-0 flex items-center gap-3 sm:gap-4">
-            {!showPreview && (
-              <button
-                onClick={() => setShowPreview(true)}
-                className="flex items-center gap-2 text-sm font-bold text-primary-600 hover:text-primary-700 transition-colors"
-              >
-                <MonitorPlay size={16} />
-                <span className="hidden md:inline">แสดงตัวอย่างหน้าเว็บ</span>
-              </button>
-            )}
+          <button
+            onClick={handleLogout}
+            className="lg:hidden flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-red-500 transition-colors"
+          >
+            <LogOut size={16} />
+            <span className="hidden sm:inline">ออกจากระบบ</span>
+          </button>
+        </div>
+
+        <nav className="flex lg:flex-col gap-1 px-2 lg:px-3 lg:py-4 lg:flex-1 overflow-x-auto lg:overflow-visible" aria-label="เมนูแอดมิน">
+          {TABS.map(tab => (
             <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-red-500 transition-colors"
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              aria-current={activeTab === tab.key ? 'page' : undefined}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-colors ${
+                activeTab === tab.key
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+              }`}
             >
-              <LogOut size={16} />
-              <span className="hidden sm:inline">ออกจากระบบ</span>
+              {tab.icon}
+              {tab.label}
             </button>
-          </div>
+          ))}
+        </nav>
+
+        <div className="hidden lg:flex flex-col gap-1 px-3 py-4 border-t border-gray-100">
+          {!showPreview && (
+            <button
+              onClick={() => setShowPreview(true)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-primary-600 hover:bg-primary-50 transition-colors"
+            >
+              <MonitorPlay size={16} />
+              แสดงตัวอย่างหน้าเว็บ
+            </button>
+          )}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+          >
+            <LogOut size={16} />
+            ออกจากระบบ
+          </button>
         </div>
-      </header>
+      </aside>
 
-      <div className={`mx-auto px-4 sm:px-6 lg:px-8 pt-6 ${showPreview ? 'max-w-none flex gap-6 items-start' : 'max-w-7xl'}`}>
-        <div className={showPreview ? 'flex-1 min-w-0' : ''}>
-
-        {activeTab === 'products' && <ProductsTab onSessionExpired={handleSessionExpired} />}
-        {activeTab === 'content' && <ContentTab onSessionExpired={handleSessionExpired} />}
-        {activeTab === 'packages' && <PackagesTab onSessionExpired={handleSessionExpired} />}
-        {activeTab === 'articles' && <ArticlesTab onSessionExpired={handleSessionExpired} />}
-        </div>
-
-        {showPreview && (
-          <div className="hidden lg:block w-[44%] shrink-0 sticky top-20 h-[calc(100vh-6rem)]">
-            <PreviewPane siteUrl={siteUrl} frameRef={frameRef} path={pvPath} onGoto={p => toFrame({ type: 'sj-goto', path: p })} onClose={() => setShowPreview(false)} />
+      <main className="flex-1 min-w-0 pb-20">
+        <div className={`mx-auto px-4 sm:px-6 lg:px-8 pt-6 ${showPreview ? 'max-w-none flex gap-6 items-start' : 'max-w-7xl'}`}>
+          <div className={showPreview ? 'flex-1 min-w-0' : ''}>
+            {activeTab === 'products' && <ProductsTab onSessionExpired={handleSessionExpired} />}
+            {activeTab === 'content' && <ContentTab onSessionExpired={handleSessionExpired} />}
+            {activeTab === 'packages' && <PackagesTab onSessionExpired={handleSessionExpired} />}
+            {activeTab === 'articles' && <ArticlesTab onSessionExpired={handleSessionExpired} />}
           </div>
-        )}
-      </div>
+
+          {showPreview && (
+            <div className="hidden lg:block w-[44%] shrink-0 sticky top-4 h-[calc(100vh-2rem)]">
+              <PreviewPane siteUrl={siteUrl} frameRef={frameRef} path={pvPath} onGoto={p => toFrame({ type: 'sj-goto', path: p })} onClose={() => setShowPreview(false)} />
+            </div>
+          )}
+        </div>
+      </main>
     </div>
     </PreviewContext.Provider>
   );
