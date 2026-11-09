@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Package, ShieldCheck, Star, Loader2, ShoppingCart, TrendingUp } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Product } from '../data/mockData';
-import { HomeContent, DEFAULT_HOME_CONTENT, useSiteContent, getHeroSlides, getHomeSectionOrder, HomeSectionId } from '../lib/siteContent';
+import { HomeContent, DEFAULT_HOME_CONTENT, useSiteContent, getHeroSlides, getHomeSectionOrder, HomeSectionId, customSectionKey } from '../lib/siteContent';
 import HeroSlider from '../components/HeroSlider';
 import ImageStrip from '../components/ImageStrip';
+import ProductGridSection from '../components/ProductGridSection';
 import { getFacebookEmbedUrl } from '../lib/facebook';
 
 
@@ -99,7 +100,7 @@ export default function Home() {
   const bestTitle = bestCfg?.title?.trim() || 'ขายดีที่สุด ⭐';
   const bestSubtitle = bestCfg ? bestCfg.subtitle : 'สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล';
 
-  const blocks: Record<HomeSectionId, React.ReactNode> = {
+  const blocks: Record<string, React.ReactNode> = {
     stats: (
       <>
       {/* Info Stats Section */}
@@ -359,8 +360,9 @@ export default function Home() {
       </>
     ),
   };
+  (content.customSections ?? []).forEach(sec => { blocks[customSectionKey(sec.id)] = <ProductGridSection section={sec} />; });
   const hasStrip = (content.imageStrip ?? []).some(i => i.image);
-  const order = getHomeSectionOrder(content).filter(id => id !== 'strip' || hasStrip);
+  const order = getHomeSectionOrder(content).filter(id => (id !== 'strip' || hasStrip) && !(id.startsWith('custom:') && !(content.customSections ?? []).find(x => customSectionKey(x.id) === id)?.products.length));
 
   return (
     <div className="flex flex-col bg-gray-50 overflow-hidden">

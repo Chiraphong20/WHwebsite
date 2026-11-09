@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Save, Check, Plus, Trash2, Upload, ArrowUp, ArrowDown } from 'lucide-react';
 import { adminFetch, AdminSessionExpiredError } from '../../lib/adminApi';
 import {
-  HomeContent, HeroSlide, getHomeSectionOrder, HOME_SECTION_LABELS, StripImage, BestSellerItem, BestSellersConfig, AboutContent, ContactContent,
+  HomeContent, HeroSlide, getHomeSectionOrder, homeSectionLabel, ProductSection, StripImage, BestSellerItem, BestSellersConfig, AboutContent, ContactContent,
   DEFAULT_HOME_CONTENT, DEFAULT_ABOUT_CONTENT, DEFAULT_CONTACT_CONTENT,
   fetchSiteContentMerged,
 } from '../../lib/siteContent';
@@ -183,10 +183,11 @@ function ImageStripEditor({ value, onChange }: { value: StripImage[]; onChange: 
 
 const PRODUCT_IMG_BASE = 'https://res.cloudinary.com/dffqpiizc/image/upload/q_auto,f_auto,w_800/';
 type PickableProduct = BestSellerItem & { barcode: string };
+let catalogueCache: PickableProduct[] | null = null; // ใช้ร่วมกันทุกกล่องเลือกสินค้า โหลดครั้งเดียว
 
 // ส่วน "ขายดีที่สุด": ตั้งชื่อหัวข้อเอง + เลือกสินค้าเอง (ไม่เลือกสินค้าเลย = ใช้ยอดขายจริงอัตโนมัติ)
-function BestSellersEditor({ value, onChange, onSessionExpired }: { value: BestSellersConfig; onChange: (v: BestSellersConfig) => void; onSessionExpired: () => void }) {
-  const [all, setAll] = useState<PickableProduct[] | null>(null);
+function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส่วนสินค้าขายดี (หน้าแรก)', emptyHint = 'ไม่เลือกเลย = แสดงสินค้าขายดีอัตโนมัติจากยอดขายจริง', path = 'bestSellers' }: { value: BestSellersConfig; onChange: (v: BestSellersConfig) => void; onSessionExpired: () => void; heading?: string; emptyHint?: string; path?: string }) {
+  const [all, setAll] = useState<PickableProduct[] | null>(catalogueCache);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -197,12 +198,14 @@ function BestSellersEditor({ value, onChange, onSessionExpired }: { value: BestS
       const res = await adminFetch('/api/products');
       if (res.ok) {
         const data = await res.json();
-        setAll(data.map((p: any): PickableProduct => ({
+        const list: PickableProduct[] = data.map((p: any): PickableProduct => ({
           id: String(p.id), name: p.name || '', category: p.category || '',
           image: p.imageId ? `${PRODUCT_IMG_BASE}${p.imageId}.jpg` : (p.image || 'https://placehold.co/400x400?text=No+Image'),
           wholesalePrice: Number(p.wholesalePrice) || 0, minWholesaleQty: Number(p.minWholesaleQty) || 1, unit: p.unit || 'ชิ้น',
           barcode: String(p.barcode || ''),
-        })));
+        }));
+        catalogueCache = list;
+        setAll(list);
       }
     } catch (err) {
       if (err instanceof AdminSessionExpiredError) onSessionExpired();
@@ -222,13 +225,13 @@ function BestSellersEditor({ value, onChange, onSessionExpired }: { value: BestS
   };
 
   return (
-    <div data-path="bestSellers" className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
-      <p className="text-sm font-bold text-dark">ส่วนสินค้าขายดี (หน้าแรก)</p>
+    <div data-path={path} className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
+      <p className="text-sm font-bold text-dark">{heading}</p>
       <Field label="หัวข้อ" value={value.title} onChange={v => onChange({ ...value, title: v })} />
       <Field label="คำอธิบายใต้หัวข้อ" value={value.subtitle} onChange={v => onChange({ ...value, subtitle: v })} />
 
       <div>
-        <p className="text-xs font-bold text-gray-500 mb-2">สินค้าที่เลือก ({value.products.length}) — ไม่เลือกเลย = แสดงสินค้าขายดีอัตโนมัติจากยอดขายจริง</p>
+        <p className="text-xs font-bold text-gray-500 mb-2">สินค้าที่เลือก ({value.products.length}){emptyHint ? ` — ${emptyHint}` : ''}</p>
         <div className="space-y-2">
           {value.products.map((p, i) => (
             <div key={p.id} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 p-2">
@@ -289,12 +292,50 @@ function SectionOrderEditor({ value, onChange }: { value: HomeContent; onChange:
         {order.map((id, i) => (
           <div key={id} className="flex items-center gap-3 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3">
             <span className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 text-xs font-extrabold flex items-center justify-center shrink-0">{i + 1}</span>
-            <span className="flex-1 text-sm font-bold text-dark">{HOME_SECTION_LABELS[id]}</span>
+            <span className="flex-1 text-sm font-bold text-dark">{homeSectionLabel(id, value)}</span>
             <button onClick={() => move(i, -1)} disabled={i === 0} title="เลื่อนขึ้น" className="p-1.5 text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowUp size={18} /></button>
             <button onClick={() => move(i, 1)} disabled={i === order.length - 1} title="เลื่อนลง" className="p-1.5 text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowDown size={18} /></button>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// หัวข้อสินค้าเพิ่มเติม: สร้างได้หลายหัวข้อ แต่ละหัวข้อตั้งชื่อและเลือกสินค้าเอง (ไปสลับลำดับได้ที่แท็บ "ลำดับหัวข้อ")
+function CustomSectionsEditor({ value, onChange, onSessionExpired }: { value: ProductSection[]; onChange: (v: ProductSection[]) => void; onSessionExpired: () => void }) {
+  const update = (i: number, v: ProductSection) => onChange(value.map((x, j) => (j === i ? v : x)));
+  return (
+    <div data-path="customSections" className="space-y-4">
+      <div>
+        <p className="text-sm font-bold text-dark">หัวข้อสินค้าเพิ่มเติม</p>
+        <p className="text-xs text-gray-400 mt-1">สร้างได้หลายหัวข้อ เช่น "สินค้าใหม่" "โปรโมชั่นประจำเดือน" แต่ละหัวข้อตั้งชื่อและเลือกสินค้าเอง · หัวข้อที่ยังไม่มีสินค้าจะไม่แสดงบนหน้าเว็บ · สลับตำแหน่งได้ที่แท็บ "ลำดับหัวข้อ"</p>
+      </div>
+      {value.map((sec, i) => (
+        <div key={sec.id} data-path={`customSections.${sec.id}`} className="relative">
+          <BestSellersEditor
+            value={sec}
+            onChange={v => update(i, { ...sec, ...v })}
+            onSessionExpired={onSessionExpired}
+            heading={`หัวข้อที่ ${i + 1}`}
+            emptyHint="ต้องเลือกสินค้าอย่างน้อย 1 ชิ้นหัวข้อนี้ถึงจะแสดง"
+            path={`customSections.${sec.id}.editor`}
+          />
+          <button
+            onClick={() => { if (window.confirm(`ลบหัวข้อ "${sec.title || 'ยังไม่ตั้งชื่อ'}" ?`)) onChange(value.filter((_, j) => j !== i)); }}
+            title="ลบหัวข้อนี้"
+            className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={14} /> ลบหัวข้อ
+          </button>
+        </div>
+      ))}
+      <button
+        onClick={() => onChange([...value, { id: Math.random().toString(36).slice(2, 8), title: '', subtitle: '', products: [] }])}
+        className="flex items-center gap-1.5 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-xs font-bold text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors"
+      >
+        <Plus size={14} /> เพิ่มหัวข้อสินค้า
+      </button>
     </div>
   );
 }
@@ -314,7 +355,7 @@ function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolea
   );
 }
 
-type Page = 'order' | 'banner' | 'strip' | 'stats' | 'highlights' | 'best' | 'reels' | 'about' | 'contact';
+type Page = 'order' | 'custom' | 'banner' | 'strip' | 'stats' | 'highlights' | 'best' | 'reels' | 'about' | 'contact';
 type Group = 'home' | 'about' | 'contact';
 
 const GROUPS: { key: Group; label: string; first: Page }[] = [
@@ -329,6 +370,7 @@ const HOME_PAGES: { key: Page; label: string }[] = [
   { key: 'stats', label: 'แถบสถิติ' },
   { key: 'highlights', label: 'จุดเด่น' },
   { key: 'best', label: 'สินค้าขายดี' },
+  { key: 'custom', label: 'หัวข้อสินค้าเพิ่มเติม' },
   { key: 'reels', label: 'คลิป Reels' },
 ];
 const groupOf = (p: Page): Group => (p === 'about' ? 'about' : p === 'contact' ? 'contact' : 'home');
@@ -343,6 +385,7 @@ function pageFromFocus(key: string, path: string): Page | null {
   if (g === 'imageStrip') return 'strip';
   if (g === 'stats') return 'stats';
   if (g === 'bestSellers') return 'best';
+  if (g === 'customSections') return 'custom';
   if (g === 'reels') return 'reels';
   if (g.startsWith('highlights')) return 'highlights';
   return null;
@@ -464,6 +507,9 @@ export default function ContentTab({ onSessionExpired, focus }: { onSessionExpir
           <div className="space-y-6">
           {page === 'order' && (
             <SectionOrderEditor value={home} onChange={sectionOrder => setHome(h => ({ ...h, sectionOrder }))} />
+          )}
+          {page === 'custom' && (
+            <CustomSectionsEditor value={home.customSections ?? []} onChange={customSections => setHome(h => ({ ...h, customSections }))} onSessionExpired={onSessionExpired} />
           )}
           {page === 'banner' && (
             <>

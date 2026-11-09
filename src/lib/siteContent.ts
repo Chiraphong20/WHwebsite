@@ -15,6 +15,7 @@ export interface HomeContent {
   heroBanner: HeroSlide; // แบนเนอร์เดิมรูปเดียว (ใช้เป็น fallback เมื่อยังไม่มี heroBanners)
   sectionOrder?: string[]; // ลำดับหัวข้อในหน้าแรก (ดู HOME_SECTION_IDS)
   imageStrip?: StripImage[]; // แถวรูปภาพใต้แถบสถิติ แสดง 5 ภาพต่อแถว เกิน 5 เลื่อนอัตโนมัติ
+  customSections?: ProductSection[]; // หัวข้อสินค้าเพิ่มเติม (ตั้งชื่อ+เลือกสินค้าเอง) เพิ่มได้หลายหัวข้อ
   bestSellers?: BestSellersConfig; // ส่วนสินค้าขายดี: ตั้งหัวข้อและเลือกสินค้าเอง (ไม่มีสินค้า = ใช้ยอดขายจริงอัตโนมัติ)
   heroBanners?: HeroSlide[]; // แบนเนอร์ใหญ่บนสุดของหน้าแรก หลายรูป สไลด์อัตโนมัติ (link ว่าง = ไม่กดไปไหน)
 }
@@ -31,10 +32,23 @@ export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
   reels: 'คลิป Facebook Reels',
 };
 
-// ลำดับที่ใช้จริง: ตามที่แอดมินตั้ง (ตัดค่าที่ไม่รู้จัก) แล้วต่อด้วยหัวข้อที่ยังไม่ได้ระบุตามลำดับเดิม
-export function getHomeSectionOrder(c: Partial<HomeContent>): HomeSectionId[] {
-  const valid = (c.sectionOrder ?? []).filter((id, i, a): id is HomeSectionId => (HOME_SECTION_IDS as readonly string[]).includes(id) && a.indexOf(id) === i);
-  return [...valid, ...HOME_SECTION_IDS.filter(id => !valid.includes(id))];
+// หัวข้อสินค้าเพิ่มเติมที่แอดมินสร้างเอง (หลายหัวข้อได้) — id ในลำดับหน้าแรกคือ custom:<id>
+export interface ProductSection { id: string; title: string; subtitle: string; products: BestSellerItem[] }
+export const customSectionKey = (id: string) => `custom:${id}`;
+
+// ลำดับที่ใช้จริง: ตามที่แอดมินตั้ง (ตัดค่าที่ไม่รู้จัก) แล้วต่อด้วยหัวข้อที่ยังไม่ได้ระบุตามลำดับเดิม (หัวข้อที่สร้างเองต่อท้าย)
+export function getHomeSectionOrder(c: Partial<HomeContent>): string[] {
+  const all: string[] = [...HOME_SECTION_IDS, ...(c.customSections ?? []).map(x => customSectionKey(x.id))];
+  const valid = (c.sectionOrder ?? []).filter((id, i, arr) => all.includes(id) && arr.indexOf(id) === i);
+  return [...valid, ...all.filter(id => !valid.includes(id))];
+}
+
+export function homeSectionLabel(id: string, c: Partial<HomeContent>): string {
+  if (id.startsWith('custom:')) {
+    const sec = (c.customSections ?? []).find(x => customSectionKey(x.id) === id);
+    return `หัวข้อสินค้า: ${sec?.title || '(ยังไม่ตั้งชื่อ)'}`;
+  }
+  return HOME_SECTION_LABELS[id as HomeSectionId] ?? id;
 }
 
 export interface StripImage { image: string; alt: string; link: string }
