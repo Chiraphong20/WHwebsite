@@ -100,6 +100,13 @@ export default function Home() {
   const bestTitle = bestCfg?.title?.trim() || 'ขายดีที่สุด ⭐';
   const bestSubtitle = bestCfg ? bestCfg.subtitle : 'สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล';
 
+  // ส่วน "สินค้ามาแรง": ถ้าแอดมินเลือกสินค้าไว้ให้ใช้รายการนั้น ไม่งั้นใช้ยอดสั่งซื้อจริง 7 วันล่าสุด
+  const trendCfg = content.trendingSection;
+  const customTrend = (trendCfg?.products?.length ?? 0) > 0;
+  const shownTrending: Product[] = customTrend ? trendCfg!.products.map(p => ({ ...p, images: [] } as unknown as Product)) : trending;
+  const trendTitle = trendCfg?.title?.trim() || 'สินค้ามาแรง 🔥';
+  const trendSubtitle = trendCfg ? trendCfg.subtitle : 'สินค้าที่ลูกค้าสั่งซื้อมากที่สุดใน 7 วันล่าสุด';
+
   const blocks: Record<string, React.ReactNode> = {
     stats: (
       <>
@@ -162,15 +169,15 @@ export default function Home() {
     trending: (
       <>
       {/* ===== Trending Section ===== */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white" data-edit="home_content:trendingSection">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-gray-100 pb-6 gap-4">
             <div>
               <div className="flex items-center space-x-2 mb-2">
                 <TrendingUp className="text-orange-500" size={26} />
-                <h2 className="text-3xl md:text-4xl font-bold text-dark">สินค้ามาแรง 🔥</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-dark">{trendTitle}</h2>
               </div>
-              <p className="text-lg text-gray-600">สินค้าที่ลูกค้าสั่งซื้อมากที่สุดใน 7 วันล่าสุด</p>
+              <p className="text-lg text-gray-600">{trendSubtitle}</p>
             </div>
             <Link to="/products" className="group flex items-center space-x-2 text-orange-600 font-semibold hover:text-orange-700 bg-orange-50 px-5 py-2.5 rounded-full transition-colors">
               <span>ดูสินค้าทั้งหมด</span>
@@ -178,12 +185,12 @@ export default function Home() {
             </Link>
           </div>
 
-          {isLoading ? (
+          {isLoading && !customTrend ? (
             <div className="w-full flex flex-col items-center justify-center py-16 space-y-4">
               <Loader2 className="animate-spin text-orange-500" size={44} />
               <p className="text-gray-500 font-medium">กำลังโหลด...</p>
             </div>
-          ) : trending.length === 0 ? (
+          ) : shownTrending.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <TrendingUp size={48} className="mx-auto mb-3 opacity-30" />
               <p className="font-medium">ยังไม่มีข้อมูลสินค้ามาแรงในขณะนี้</p>
@@ -191,7 +198,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {trending.map((product, index) => (
+              {shownTrending.map((product, index) => (
                 <Link to="/products" key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-orange-100 hover:-translate-y-2">
                   <div className="aspect-square relative overflow-hidden bg-gray-50">
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" loading="lazy" />

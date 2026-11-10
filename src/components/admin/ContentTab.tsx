@@ -186,7 +186,7 @@ type PickableProduct = BestSellerItem & { barcode: string };
 let catalogueCache: PickableProduct[] | null = null; // ใช้ร่วมกันทุกกล่องเลือกสินค้า โหลดครั้งเดียว
 
 // ส่วน "ขายดีที่สุด": ตั้งชื่อหัวข้อเอง + เลือกสินค้าเอง (ไม่เลือกสินค้าเลย = ใช้ยอดขายจริงอัตโนมัติ)
-function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส่วนสินค้าขายดี (หน้าแรก)', emptyHint = 'ไม่เลือกเลย = แสดงสินค้าขายดีอัตโนมัติจากยอดขายจริง', path = 'bestSellers' }: { value: BestSellersConfig; onChange: (v: BestSellersConfig) => void; onSessionExpired: () => void; heading?: string; emptyHint?: string; path?: string }) {
+function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส่วนสินค้าขายดี (หน้าแรก)', emptyHint = 'ไม่เลือกเลย = แสดงสินค้าขายดีอัตโนมัติจากยอดขายจริง', path = 'bestSellers', stat }: { stat?: 'trending' | 'best'; value: BestSellersConfig; onChange: (v: BestSellersConfig) => void; onSessionExpired: () => void; heading?: string; emptyHint?: string; path?: string }) {
   const [all, setAll] = useState<PickableProduct[] | null>(catalogueCache);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState(''); // ตัวกรองหมวดหมู่ (ว่าง = ทุกหมวด)
@@ -214,6 +214,35 @@ function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส�
       setLoading(false);
     }
   };
+
+  // สถิติจริงจากยอดสั่งซื้อ: มาแรง = 7 วันล่าสุด, ขายดี = สะสมทั้งหมด (เรียงมากไปน้อย)
+  const [ranking, setRanking] = useState<(BestSellerItem & { qty: number })[]>([]);
+  const [rankLoaded, setRankLoaded] = useState(false);
+  useEffect(() => {
+    if (!stat) return;
+    let alive = true;
+    const url = stat === 'trending' ? '/api/products/trending?days=7&limit=30' : '/api/products/best-sellers?limit=30';
+    fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' }, cache: 'no-store' })
+      .then(r => (r.ok ? r.json() : []))
+      .then((data: any[]) => {
+        if (!alive) return;
+        setRanking((Array.isArray(data) ? data : []).map(p => ({
+          id: String(p.id), name: p.name || '', category: p.category || '',
+          image: p.imageId ? `${PRODUCT_IMG_BASE}${p.imageId}.jpg` : (p.image || 'https://placehold.co/400x400?text=No+Image'),
+          wholesalePrice: Number(p.wholesalePrice) || 0, minWholesaleQty: Number(p.minWholesaleQty) || 1, unit: p.unit || 'ชิ้น',
+          qty: Number(stat === 'trending' ? p.trendQty : p.soldQty) || 0,
+        })));
+      })
+      .catch(() => {})
+      .finally(() => { if (alive) setRankLoaded(true); });
+    return () => { alive = false; };
+  }, [stat]);
+  const qtyOf = new Map(ranking.map(r => [r.id, r.qty]));
+  const rankOf = new Map(ranking.map((r, i) => [r.id, i + 1]));
+  const statLabel = stat === 'trending' ? 'สั่งซื้อ 7 วันล่าสุด' : 'ขายสะสม';
+  const statBadge = (id: string) => qtyOf.has(id)
+    ? <span className="inline-block ml-1.5 px-1.5 py-0.5 rounded bg-orange-50 text-orange-600 text-[10px] font-bold">{stat === 'trending' ? '🔥' : '⭐'} อันดับ {rankOf.get(id)} · {qtyOf.get(id)!.toLocaleString()} ชิ้น</span>
+    : (stat ? <span className="inline-block ml-1.5 px-1.5 py-0.5 rounded bg-gray-100 text-gray-400 text-[10px] font-bold">ยังไม่มียอด</span> : null);
 
   const picked = new Set(value.products.map(p => p.id));
   const term = q.trim().toLowerCase();
@@ -243,7 +272,7 @@ function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส�
               <img src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover bg-gray-100 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-dark truncate">{p.name}</p>
-                <p className="text-xs text-gray-400">{p.category} · ราคาส่ง ฿{p.wholesalePrice.toLocaleString()}</p>
+                <p className="text-xs text-gray-400">{p.category} · ราคาส่ง ฿{p.wholesalePrice.toLocaleString()}{statBadge(p.id)}</p>
               </div>
               <button onClick={() => move(i, -1)} disabled={i === 0} title="เลื่อนขึ้น" className="p-1.5 text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowUp size={16} /></button>
               <button onClick={() => move(i, 1)} disabled={i === value.products.length - 1} title="เลื่อนลง" className="p-1.5 text-gray-400 hover:text-primary-600 disabled:opacity-30"><ArrowDown size={16} /></button>
@@ -252,6 +281,33 @@ function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส�
           ))}
         </div>
       </div>
+
+      {stat && (
+        <div className="bg-white rounded-xl border border-gray-100">
+          <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-50">
+            <p className="text-xs font-bold text-gray-500">{stat === 'trending' ? '🔥 สถิติสินค้ามาแรงจริง' : '⭐ สถิติสินค้าขายดีจริง'} ({statLabel}) — กดเพื่อเพิ่ม</p>
+            {ranking.some(r => !picked.has(r.id)) && (
+              <button onClick={() => onChange({ ...value, products: [...value.products, ...ranking.filter(r => !picked.has(r.id)).slice(0, 10).map(({ qty, ...item }) => item)] })} className="shrink-0 text-xs font-bold text-primary-600 hover:text-primary-700">
+                เพิ่ม 10 อันดับแรก
+              </button>
+            )}
+          </div>
+          <div className="max-h-60 overflow-y-auto divide-y divide-gray-50">
+            {!rankLoaded && <p className="p-3 text-xs text-gray-400">กำลังโหลดสถิติ...</p>}
+            {rankLoaded && ranking.length === 0 && <p className="p-3 text-xs text-gray-400">ยังไม่มีข้อมูลยอดสั่งซื้อ</p>}
+            {ranking.map((r, i) => (
+              <button key={r.id} disabled={picked.has(r.id)} onClick={() => { const { qty, ...item } = r; onChange({ ...value, products: [...value.products, item] }); }}
+                className="w-full flex items-center gap-3 p-2 text-left hover:bg-primary-50 disabled:opacity-40 disabled:hover:bg-transparent transition-colors">
+                <span className="w-6 text-center text-xs font-extrabold text-gray-400 shrink-0">{i + 1}</span>
+                <img src={r.image} alt="" className="w-9 h-9 rounded-lg object-cover bg-gray-100 shrink-0" />
+                <span className="flex-1 min-w-0 text-sm font-medium text-dark truncate">{r.name}</span>
+                <span className="text-xs font-bold text-orange-600 shrink-0">{r.qty.toLocaleString()} ชิ้น</span>
+                {picked.has(r.id) ? <Check size={16} className="text-green-500 shrink-0" /> : <Plus size={16} className="text-primary-500 shrink-0" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="relative space-y-2">
         <div className="flex flex-col sm:flex-row gap-2">
@@ -290,7 +346,7 @@ function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส�
                   <img src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0" />
                   <span className="flex-1 min-w-0">
                     <span className="block text-sm font-medium text-dark truncate">{p.name}</span>
-                    <span className="block text-xs text-gray-400 truncate">{p.category}</span>
+                    <span className="block text-xs text-gray-400 truncate">{p.category}{statBadge(p.id)}</span>
                   </span>
                   <Plus size={16} className="text-primary-500 shrink-0" />
                 </button>
@@ -384,7 +440,7 @@ function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolea
   );
 }
 
-type Page = 'order' | 'custom' | 'banner' | 'strip' | 'stats' | 'highlights' | 'best' | 'reels' | 'about' | 'contact';
+type Page = 'order' | 'custom' | 'banner' | 'strip' | 'stats' | 'highlights' | 'trending' | 'best' | 'reels' | 'about' | 'contact';
 type Group = 'home' | 'about' | 'contact';
 
 const GROUPS: { key: Group; label: string; first: Page }[] = [
@@ -398,6 +454,7 @@ const HOME_PAGES: { key: Page; label: string }[] = [
   { key: 'strip', label: 'แถวรูปภาพ' },
   { key: 'stats', label: 'แถบสถิติ' },
   { key: 'highlights', label: 'จุดเด่น' },
+  { key: 'trending', label: 'สินค้ามาแรง' },
   { key: 'best', label: 'สินค้าขายดี' },
   { key: 'custom', label: 'หัวข้อสินค้าเพิ่มเติม' },
   { key: 'reels', label: 'คลิป Reels' },
@@ -413,6 +470,7 @@ function pageFromFocus(key: string, path: string): Page | null {
   if (g === 'heroBanner') return 'banner';
   if (g === 'imageStrip') return 'strip';
   if (g === 'stats') return 'stats';
+  if (g === 'trendingSection') return 'trending';
   if (g === 'bestSellers') return 'best';
   if (g === 'customSections') return 'custom';
   if (g === 'reels') return 'reels';
@@ -584,11 +642,25 @@ export default function ContentTab({ onSessionExpired, focus }: { onSessionExpir
             </div>
             </>
           )}
+          {page === 'trending' && (
+            <>
+            <BestSellersEditor
+              heading="ส่วนสินค้ามาแรง (หน้าแรก)"
+              emptyHint="ไม่เลือกเลย = แสดงสินค้ามาแรงอัตโนมัติจากยอดสั่งซื้อจริง 7 วันล่าสุด"
+              path="trendingSection"
+              stat="trending"
+              value={home.trendingSection ?? { title: 'สินค้ามาแรง 🔥', subtitle: 'สินค้าที่ลูกค้าสั่งซื้อมากที่สุดใน 7 วันล่าสุด', products: [] }}
+              onChange={trendingSection => setHome(h => ({ ...h, trendingSection }))}
+              onSessionExpired={onSessionExpired}
+            />
+            </>
+          )}
           {page === 'best' && (
             <>
             <BestSellersEditor
               value={home.bestSellers ?? { title: 'ขายดีที่สุด ⭐', subtitle: 'สินค้าที่มียอดขายสะสมสูงสุดตลอดกาล', products: [] }}
               onChange={bestSellers => setHome(h => ({ ...h, bestSellers }))}
+              stat="best"
               onSessionExpired={onSessionExpired}
             />
             </>

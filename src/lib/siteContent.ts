@@ -16,6 +16,7 @@ export interface HomeContent {
   sectionOrder?: string[]; // ลำดับหัวข้อในหน้าแรก (ดู HOME_SECTION_IDS)
   imageStrip?: StripImage[]; // แถวรูปภาพใต้แถบสถิติ แสดง 5 ภาพต่อแถว เกิน 5 เลื่อนอัตโนมัติ
   customSections?: ProductSection[]; // หัวข้อสินค้าเพิ่มเติม (ตั้งชื่อ+เลือกสินค้าเอง) เพิ่มได้หลายหัวข้อ
+  trendingSection?: BestSellersConfig; // ส่วนสินค้ามาแรง: ตั้งหัวข้อและเลือกสินค้าเอง (ไม่มีสินค้า = ใช้ยอดสั่งซื้อจริง 7 วันล่าสุดอัตโนมัติ)
   bestSellers?: BestSellersConfig; // ส่วนสินค้าขายดี: ตั้งหัวข้อและเลือกสินค้าเอง (ไม่มีสินค้า = ใช้ยอดขายจริงอัตโนมัติ)
   heroBanners?: HeroSlide[]; // แบนเนอร์ใหญ่บนสุดของหน้าแรก หลายรูป สไลด์อัตโนมัติ (link ว่าง = ไม่กดไปไหน)
 }
