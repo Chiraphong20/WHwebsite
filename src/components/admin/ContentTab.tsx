@@ -189,6 +189,7 @@ let catalogueCache: PickableProduct[] | null = null; // ใช้ร่วมก
 function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส่วนสินค้าขายดี (หน้าแรก)', emptyHint = 'ไม่เลือกเลย = แสดงสินค้าขายดีอัตโนมัติจากยอดขายจริง', path = 'bestSellers' }: { value: BestSellersConfig; onChange: (v: BestSellersConfig) => void; onSessionExpired: () => void; heading?: string; emptyHint?: string; path?: string }) {
   const [all, setAll] = useState<PickableProduct[] | null>(catalogueCache);
   const [q, setQ] = useState('');
+  const [cat, setCat] = useState(''); // ตัวกรองหมวดหมู่ (ว่าง = ทุกหมวด)
   const [loading, setLoading] = useState(false);
 
   const loadAll = async () => {
@@ -216,7 +217,11 @@ function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส�
 
   const picked = new Set(value.products.map(p => p.id));
   const term = q.trim().toLowerCase();
-  const results = (all ?? []).filter(p => term && !picked.has(p.id) && (p.name.toLowerCase().includes(term) || p.barcode.toLowerCase().includes(term))).slice(0, 12);
+  const categories = Array.from(new Set((all ?? []).map(p => p.category).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'th'));
+  const searching = !!term || !!cat; // พิมพ์ค้นหา หรือเลือกหมวด อย่างใดอย่างหนึ่งก็แสดงรายการ
+  const matches = (all ?? []).filter(p => searching && !picked.has(p.id) && (!cat || p.category === cat) && (!term || p.name.toLowerCase().includes(term) || p.barcode.toLowerCase().includes(term)));
+  const results = matches.slice(0, 50);
+  const addAll = (items: PickableProduct[]) => onChange({ ...value, products: [...value.products, ...items.map(({ barcode, ...item }) => item)] });
   const add = ({ barcode, ...item }: PickableProduct) => onChange({ ...value, products: [...value.products, item] });
   const move = (i: number, dir: -1 | 1) => {
     const next = [...value.products];
@@ -248,25 +253,49 @@ function BestSellersEditor({ value, onChange, onSessionExpired, heading = 'ส�
         </div>
       </div>
 
-      <div className="relative">
-        <input
-          value={q}
-          onFocus={loadAll}
-          onChange={e => { setQ(e.target.value); loadAll(); }}
-          placeholder="พิมพ์ชื่อสินค้าหรือรหัสบาร์โค้ดเพื่อค้นหาและเพิ่ม..."
-          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 font-medium text-sm"
-        />
+      <div className="relative space-y-2">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            value={q}
+            onFocus={loadAll}
+            onChange={e => { setQ(e.target.value); loadAll(); }}
+            placeholder="พิมพ์ชื่อสินค้าหรือรหัสบาร์โค้ดเพื่อค้นหาและเพิ่ม..."
+            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 font-medium text-sm"
+          />
+          <select
+            value={cat}
+            onFocus={loadAll}
+            onChange={e => setCat(e.target.value)}
+            className="sm:w-56 px-3 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 font-medium text-sm"
+          >
+            <option value="">ทุกหมวดหมู่</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
         {loading && <Loader2 size={16} className="animate-spin absolute right-3 top-3 text-gray-400" />}
-        {term && !loading && (
-          <div className="mt-2 bg-white rounded-xl border border-gray-100 max-h-72 overflow-y-auto divide-y divide-gray-50">
-            {results.length === 0 && <p className="p-3 text-xs text-gray-400">ไม่พบสินค้า</p>}
-            {results.map(p => (
-              <button key={p.id} onClick={() => add(p)} className="w-full flex items-center gap-3 p-2 text-left hover:bg-primary-50 transition-colors">
-                <img src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0" />
-                <span className="flex-1 min-w-0 text-sm font-medium text-dark truncate">{p.name}</span>
-                <Plus size={16} className="text-primary-500 shrink-0" />
-              </button>
-            ))}
+        {searching && !loading && (
+          <div className="bg-white rounded-xl border border-gray-100">
+            <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-50">
+              <p className="text-xs text-gray-400">พบ {matches.length} รายการ{matches.length > results.length ? ` (แสดง ${results.length} รายการแรก — พิมพ์เพิ่มเพื่อกรองให้แคบลง)` : ''}</p>
+              {results.length > 0 && (
+                <button onClick={() => addAll(results)} className="shrink-0 text-xs font-bold text-primary-600 hover:text-primary-700">
+                  เพิ่มทั้ง {results.length} รายการนี้
+                </button>
+              )}
+            </div>
+            <div className="max-h-72 overflow-y-auto divide-y divide-gray-50">
+              {results.length === 0 && <p className="p-3 text-xs text-gray-400">ไม่พบสินค้า</p>}
+              {results.map(p => (
+                <button key={p.id} onClick={() => add(p)} className="w-full flex items-center gap-3 p-2 text-left hover:bg-primary-50 transition-colors">
+                  <img src={p.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0" />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm font-medium text-dark truncate">{p.name}</span>
+                    <span className="block text-xs text-gray-400 truncate">{p.category}</span>
+                  </span>
+                  <Plus size={16} className="text-primary-500 shrink-0" />
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
